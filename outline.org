@@ -1,0 +1,25 @@
+* Abstract
+* Introduction
+** Background
+*** Ethereum
+*** Merkle-Patricia Trie
+*** Consensus
+*** RLP serialization
+** Problem Description
+** Related Work
+* Implementation
+** Design
+* Evaluation
+** Correctness
+** Quantitative Results
+*** Witness Size
+*** Blockchain directory size
+*** Database Operations: compare stateful vs. stateless client
+**** Track where db operations come from with gdb
+** Max throughput for first few blocks
+* Future Work
+** Witness revision and caching
+*** Explore different caching strategies
+    I have all the data I need but I just need to write scripts to analyze it
+** Ethereum 2.0 Sharding
+* Conclusion
