@@ -33,22 +33,55 @@
 
 \section{Introduction}
 
-In the last few years, blockchain technology has become increasingly popular. Its applications are being explored in several industries.
+In the last few years, blockchain technology has become increasingly popular. Its applications are being explored in several industries. Blockchain is a decentralized data sharing technology that works in a distributed environment consisting of multiple nodes. It can be defined as a immutable \emph{ledger} that records transactions. The blockchain structure consists of cryptographically signed \emph{blocks} that are linked to each other with cryptographic hashes. Each block contains \emph{transactions} that show value transfers between different accounts. Each node in the network maintains its own copy of the blockchain, which makes the ledger a \emph{distributed ledger}. The ledger is kept up to date using a distributed consensus mechanism, which allows nodes to validate transactions, package them into blocks, and update the block hash chain.
 
-Blockchain is a data sharing technology that works in a distributed environment consisting of multiple nodes. It can be defined as a immutable \emph{ledger} that records transactions. The blockchain structure consists of cryptographically signed \emph{blocks} that are linked to each other with cryptographic hashes. Each block contains \emph{transactions} that show value transfers between different accounts. Each node in the network maintains its own copy of the blockchain, which makes the ledger a \emph{distributed ledger}. The ledger is kept up to date using a distributed consensus mechanism, which allows nodes to validate transactions, package them into blocks, and update the block hash chain.
-
-Blockchain was first suggested by Satoshi Nakamoto's paper introducing Bitcoin in late 2008. Bitcoin is a cryptocurrency and is a particular implementation of blockchain technology. Bitcoin has demonstrated that it is possible to create a decentralized currency that can be used all over the world.
-
-\subsection{Ethereum}
+Blockchain and cryptocurrency are two different concepts, but their development has been intertwined. Blockchain was first suggested by Satoshi Nakamoto's paper introducing Bitcoin in late 2008. Bitcoin is a cryptocurrency and is a particular implementation of blockchain technology. Bitcoin has demonstrated that it is possible to create a decentralized currency that can be used all over the world.
 
 Ethereum is a cryptocurrency that builds upon the ideas introduced in Bitcoin. Ethereum is a transaction-based state machine that starts with some initial \emph{genesis} state, incrementally executes transactions, and arrives at a final state. These transactions are collected into blocks, and blocks are hashed to create a hash chain. The Ethereum protocol has a native currency called Ether and is abbreviated as ETH.
 
-% TODO: include state transition function here
-
 The goal of Ethereum is to create a platform for decentralized applications, and it does this by incorporating a built-in Turing complete programming language. This allows users to write \emph{smart contracts} that contain arbitrary code and run on the decentralized Ethereum network. In contrast to Bitcoin, where transactions are simply value transfers between accounts, Ethereum transactions can create and run smart contracts. The ability to run arbitrary code makes Ethereum an extremely powerful abstraction layer on which decentralized applications can be built.
+
+One problem with blockchain-based systems is that they are orders of magnitude slower than their centralized equivalent. Ethereum is only able to process about 15 transactions per second, while payment processors like Visa can process 24,000 transactions per second. New distributed applications that run on Ethereum such as CryptoKitties have slowed down transaction processing time even further. Improving scalability of blockchain-based systems is crucial for widespread adoption.
+
+A proposed solution to Ethereum's scalability problems is called \emph{stateless clients}. Stateless Clients was proposed by Vitalik Buterin, the founder of Ethereum, in 2017. Stateless Clients aims to improve scalability by reducing I/O when verifying blocks. However, until now there has been no working prototype of stateless clients.
+
+The structure of this paper is as follows: first, I will review some foundational concepts in Ethereum. Second, I will describe in more detail how Stateless Clients is designed and how I implemented Stateless Clients in Parity. Third, I will show some of the results I obtained from my implementation.
+
+\section{Background}
 
 \subsection{Ethereum Virtual Machine}
 
+Ethereum is a platform for deploying and running smart contracts. These smart contracts run in the Ethereum Virtual Machine, or EVM. Contracts are created with the \emph{Solidity} programming language, and compile to EVM opcodes.
+
+These EVM opcodes allow the EVM to be Turing complete, limited only by the following factors:
+\begin{enumerate}
+  \item Stack space: The stack has a capacity of 1024 entries, and each entry is 256 bits. The EVM is a stack-based virtual machine and the stack is used to push arguments to opcodes.
+  \item Execution time: Ethereum measures ``computational effort'' using \emph{gas}. Each opcode in a contract requires a certain amount of gas to pay for its execution. Contracts run as part of transactions, and one field in the transaction is called the \emph{gas price}. In order to pay for a contract's execution, the amount of gas consumed during the execution is multiplied by the gas price, and resulting product is deducted from the transaction sender's account.
+  \item Memory: Memory is used for storing variables and calling functions. No hard limit exists on the amount of memory that may be used, but memory must be paid for with gas. The cost grows quadratically according to the following equation.
+  % Equation 296 in the Yellow Paper
+  \begin{align*}
+    C_{mem}(a) &\equiv G_{memory} \cdot a + \lfloor \frac{a^2}{512} \rfloor \\
+    G_{memory} &= 3
+  \end{align*}
+  \item Storage: Contracts may also store and read data in permanent storage. The \texttt{SSTORE} opcode stores a value to contract storage. This opcode costs 5,000 gas when writing to an existing value and 20,000 gas when writing to a new value. There is no hard limit on contract storage, but it is stored on each Ethereum node and is limited by hard drive capacity. Therefore, to discourage overuse of contract storage, the gas price is very high.
+\end{enumerate}
+
+
+
+\subsection{Ethereum Transactions and Blocks}
+
+\emph{Transactions} are how the outside world communicates with Ethereum. A transaction can either transfer ETH between two accounts, create a smart contract, or call a smart contract. A transaction has a \emph{sender} and a \emph{receiver} which are identified by account addresses.
+
+Each account in Ethereum is identified by a 160-bit address, and accounts can either belong to smart contracts or individuals. Smart contract addresses are determined when a contract is created using metadata from the account of the contract creator (the sender of the contract create transaction). Individual accounts use public and private keys, and the account address is the rightmost 160 bits of the SHA-3 (Keccak) hash of the public key. % footnote: explain Keccak vs SHA-3???
+
+\emph{Blocks} in Ethereum are collections of transactions. Blocks contain transactions and a \emph{header}, which contains metadata about the block. One field in the header is the \emph{parent block hash}. Blocks ``build'' on top of previous blocks by including the SHA-3 hash of the previous block in the block header. This forms a ``hash chain'' of blocks.
+
+
+\subsection{Merkle-Patricia Trie}
+
+% TODO
+
+\subsection{Recursive-Length-Prefix (RLP) Encoding}
 
 \subsection{Consensus}
 Ethereum supports multiple consensus protocols, but the protocol that is most popular is Proof-Of-Work (PoW). Proof-of-work deters abuse by requiring that nodes perform some work. This consensus protocol requires that nodes send proofs that the work has been done. These proofs are easy to verify, but are difficult to obtain.
@@ -60,13 +93,9 @@ Miners mine blocks by choosing values for the \emph{nonce}, a field in a block's
 
 Miners in Ethereum are rewarded by a predetermined block reward and by the transaction fees from the transactions they include in the block.
 
-\subsection{Merkle-Patricia Trie}
-
-% TODO
-
 \subsection{Scalability Problems}
 
-Although blockchain based systems are being used in a variety of applications such as cryptocurrencies, they suffer from poor performance. Ethereum is only able to process about 15 transactions per second, while payment processors like Visa can process 24,000 transactions per second. New distributed applications that run on Ethereum such as CryptoKitties have slowed down transaction processing time even further.
+
 
 % sources:
 % https://www.investinblockchain.com/vitalik-ethereum-needs-100k-transactions-per-second/
@@ -140,7 +169,7 @@ Block verification in Ethereum is fairly simple. Blocks that are freshly mined a
   \item \texttt{verify\_block\_final}: Executes the transactions in the block, and checks block information against block execution results. This step makes sure the resulting state root, gas used, log bloom filter, and receipts root match the what is recorded in the block header.
 \end{enumerate}
 
-I modified the final step of the block verification process to use a \texttt{ProofCheck} state backend instead of \texttt{StateDB}. When constructing the \texttt{ProofCheck}, we use the witness that is broadcast with the block. The verifying node then no longer needs access to the Ethereum state trie.
+I modified the final step of the block verification process to use a \texttt{WitnessCheck} state backend instead of \texttt{StateDB}. When constructing the \texttt{WitnessCheck}, we use the witness that is broadcast with the block. The verifying node then no longer needs access to the Ethereum state trie.
 
 \subsection{Serialization of witnesses}
 Ethereum has a native serialization protocol called Recursive Length Prefix (RLP). RLP encodes arbitrarily nested arrays of binary data. Transactions and blocks are serialized with RLP. A serialized block has the following layout:
