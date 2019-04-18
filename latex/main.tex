@@ -54,7 +54,7 @@
 
 In the last few years, blockchain technology has become increasingly popular. Its applications are being explored in several industries. Blockchain is a decentralized data sharing technology that works in a distributed environment consisting of multiple nodes. It can be defined as a immutable \emph{ledger} that records transactions. The blockchain structure consists of cryptographically signed \emph{blocks} that are linked to each other with cryptographic hashes. Each block contains \emph{transactions} that show value transfers between different accounts. Each node in the network maintains its own copy of the blockchain, which makes the ledger a \emph{distributed ledger}. The ledger is kept up to date using a distributed consensus mechanism, which allows nodes to validate transactions, package them into blocks, and update the block hash chain.
 
-Blockchain and cryptocurrency are two different concepts, but their development has been intertwined. Blockchain was first suggested by Satoshi Nakamoto's paper introducing Bitcoin in late 2008. Bitcoin is a cryptocurrency and is a particular implementation of blockchain technology. Bitcoin has demonstrated that it is possible to create a decentralized currency that can be used all over the world.
+Blockchain and cryptocurrency are two different concepts, but their development has been intertwined. Blockchain was first suggested by Satoshi Nakamoto's paper introducing Bitcoin in late 2008. Bitcoin is a cryptocurrency and is a particular implementation of blockchain technology.
 
 Ethereum is a cryptocurrency that builds upon the ideas introduced in Bitcoin. Ethereum is a transaction-based state machine that starts with some initial \emph{genesis} state, incrementally executes transactions, and arrives at a final state. These transactions are collected into blocks, and blocks are hashed to create a hash chain. The Ethereum protocol has a native currency called Ether and is abbreviated as ETH.
 
@@ -80,7 +80,7 @@ These EVM opcodes allow the EVM to be Turing complete, limited only by the follo
   % Equation 296 in the Yellow Paper
   \begin{align*}
     C_{mem}(a) &\equiv G_{memory} \cdot a + \lfloor \frac{a^2}{512} \rfloor \\
-    G_{memory} &= 3
+    \text{$G_{memory}$ is a constant defined to be $G_{memory} = 3$}
   \end{align*}
   \item Storage: Contracts may also store and read data in permanent storage. The \texttt{SSTORE} opcode stores a value to contract storage. This opcode costs 5,000 gas when writing to an existing value and 20,000 gas when writing to a new value. There is no hard limit on contract storage, but it is stored on each Ethereum node and is limited by hard drive capacity. Therefore, to discourage overuse of contract storage, the gas price is very high.
 \end{enumerate}
@@ -124,7 +124,7 @@ In PoW, blocks must be \emph{mined} before they are added to the hash chain. Nod
 
 Miners mine blocks by choosing values for the \emph{nonce}, a field in a block's header. A block is successfully mined if the block's hash satisfies a certain condition. By modifying the nonce field in the block header, serializing the block header, and finding the SHA-3 hash of the serialized header, we obtain the block hash. Once a nonce that satisfies the PoW condition has been found, the miner advertises the mined block on the network. Other nodes on the network check that the block has been mined correctly by hashing the block header and checking if it satisfies the PoW condition.
 
-Miners in Ethereum are rewarded by a predetermined block reward and by the transaction fees from the transactions they include in the block.
+Miners in Ethereum are rewarded by a predetermined block reward and by the transaction fees from the transactions they include in the block. Reward distribution is done by including the account address of the miner in the block's header. This is called the block's \emph{coinbase}. Miners also do not coordinate mining blocks and race against each other to mine the next block in the block chain. Since there is no coordination, it is possible for more than one block to be generated simultaneously. If this happens, then one block will be chosen to be added onto the main block chain, and the other blocks become \emph{uncle blocks}. Miners are still rewarded for producing uncle blocks, but the reward is not as high as for producing a normal block.
 
 % sources:
 % https://www.investinblockchain.com/vitalik-ethereum-needs-100k-transactions-per-second/
@@ -163,7 +163,7 @@ Ethereum state in Parity is accessed though a \texttt{State} struct. \texttt{Sta
 
 In addition to these tasks, \texttt{State} also maintains an internal cache of the accounts that were requested. Modifications to these accounts are cached, and are written to the underlying storage only when the \texttt{State} object is destroyed.
 
-The \texttt{State} struct provides a convenient wrapper around the Ethereum state trie discussed earlier. Other parts of Parity, such as the Ethereum Virtual Machine, use the functions exposed by \texttt{State} to execute transactions. However, the Ethereum state data is not stored inside the \texttt{State} object. \texttt{State} is a generic struct that uses a state backend (a \texttt{Backend} object).
+The \texttt{State} struct provides a convenient wrapper around the Ethereum state trie. Other parts of Parity, such as the Ethereum Virtual Machine, use the functions exposed by \texttt{State} to execute transactions. However, the Ethereum state data is not stored inside the \texttt{State} object. \texttt{State} is a generic struct that uses a state backend (a \texttt{Backend} object) to read and write state data.
 
 \texttt{Backend} is a Rust trait. Traits in Rust are similar to interfaces in other languages like Java. Structs that implement the \texttt{Backend} trait need to have the following methods defined:
 
@@ -175,7 +175,7 @@ The \texttt{State} struct provides a convenient wrapper around the Ethereum stat
   \item \texttt{Remove(key)}
 \end{enumerate}
 
-The ``standard'' backend that Parity uses is the \texttt{StateDB} backend. \texttt{StateDB} is a struct that contains a pointer to a RocksDB database object and implements each of the required methods by reading and writing from RocksDB.
+The ``standard'' backend that Parity uses is the \texttt{StateDB} backend. \texttt{StateDB} is a struct that contains a pointer to a RocksDB database object and implements each of the required methods by reading and writing from RocksDB. RocksDB is a popular key-value store
 
 % TODO: insert diagram showing relationships?
 
@@ -183,7 +183,7 @@ Witnesses are generated when a block is created, and the process of block creati
 \begin{enumerate}
   \item Select transactions from transaction pool
   \item Execute transactions to find new state root hash
-  \item Find nonce for block (mining)
+  \item Find nonce for block (``mining'')
 \end{enumerate}
 In Parity, blocks are created by a \texttt{Miner} object. Since the \texttt{Miner} object executes transactions, it needs access to the Ethereum state, provided by a \texttt{State} object and a \texttt{Backend} object. I replaced the \texttt{StateDB} backend that the \texttt{Miner} uses with a backend I created called \texttt{WitnessCreate}. The \texttt{WitnessCreate}
 
@@ -220,7 +220,7 @@ A RLP serialized block has the following layout:
   \item Body
   \begin{enumerate}
     \item Merkle-Patricia trie of serialized transactions
-    \item Merkle-Patricia trie of uncle block headers
+    \item Merkle-Patricia trie of headers of uncle blocks
     \item \emph{Serialized witness}
   \end{enumerate}
 \end{enumerate}
