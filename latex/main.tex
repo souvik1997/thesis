@@ -52,6 +52,8 @@
 
 \section{Introduction}
 
+% reword first two sentences
+
 In the last few years, blockchain technology has become increasingly popular. Its applications are being explored in several industries. Blockchain is a decentralized data sharing technology that works in a distributed environment consisting of multiple nodes. It can be defined as a immutable \emph{ledger} that records transactions. The blockchain structure consists of cryptographically signed \emph{blocks} that are linked to each other with cryptographic hashes. Each block contains \emph{transactions} that show value transfers between different accounts. Each node in the network maintains its own copy of the blockchain, which makes the ledger a \emph{distributed ledger}. The ledger is kept up to date using a distributed consensus mechanism, which allows nodes to validate transactions, package them into blocks, and update the block hash chain.
 
 Blockchain and cryptocurrency are two different concepts, but their development has been intertwined. Blockchain was first suggested by Satoshi Nakamoto's paper introducing Bitcoin in late 2008. Bitcoin is a cryptocurrency and is a particular implementation of blockchain technology.
@@ -80,8 +82,8 @@ These EVM opcodes allow the EVM to be Turing complete, limited only by the follo
   % Equation 296 in the Yellow Paper
   \begin{align*}
     C_{mem}(a) &\equiv G_{memory} \cdot a + \lfloor \frac{a^2}{512} \rfloor \\
-    \text{$G_{memory}$ is a constant defined to be $G_{memory} = 3$}
   \end{align*}
+  $G_{memory}$ is a constant defined to be $G_{memory} = 3$, and $a$ is the amount of $256$-bit words used.
   \item Storage: Contracts may also store and read data in permanent storage. The \texttt{SSTORE} opcode stores a value to contract storage. This opcode costs 5,000 gas when writing to an existing value and 20,000 gas when writing to a new value. There is no hard limit on contract storage, but it is stored on each Ethereum node and is limited by hard drive capacity. Therefore, to discourage overuse of contract storage, the gas price is very high.
 \end{enumerate}
 
@@ -117,12 +119,12 @@ Ethereum is a transaction-based state machine, since applying a transaction to a
  % TODO: should I go into more detail? it is pretty complicated and would take a few paragraphs to describe fully
 
 \subsection{Consensus}
-Ethereum supports multiple consensus protocols, but the protocol that is most popular is Proof-Of-Work (PoW). Proof-of-work deters abuse by requiring that nodes perform some work. This consensus protocol requires that nodes send proofs that the work has been done. These proofs are easy to verify, but are difficult to obtain.
+Ethereum supports multiple consensus protocols, but the protocol that is most popular is \emph{Proof-Of-Work} (PoW). Proof-of-work deters abuse by requiring that nodes perform some work. This consensus protocol requires that nodes send proofs that the work has been done. These proofs are easy to verify, but are difficult to obtain.
 
 In the context of Ethereum, PoW is used when creating new blocks. Blocks in Ethereum must be \emph{mined} before they can be added to the hash chain. The process of mining a block is finding a
 In PoW, blocks must be \emph{mined} before they are added to the hash chain. Nodes which mine blocks are called \emph{miners}. Any node in Ethereum may choose to be a miner.
 
-Miners mine blocks by choosing values for the \emph{nonce}, a field in a block's header. A block is successfully mined if the block's hash satisfies a certain condition. By modifying the nonce field in the block header, serializing the block header, and finding the SHA-3 hash of the serialized header, we obtain the block hash. Once a nonce that satisfies the PoW condition has been found, the miner advertises the mined block on the network. Other nodes on the network check that the block has been mined correctly by hashing the block header and checking if it satisfies the PoW condition.
+Miners mine blocks by choosing values for the \emph{nonce}, a field in a block's header. A block is successfully mined if the block's hash satisfies a certain condition. By modifying the nonce field in the block header, serializing the block header with RLP, and finding the SHA-3 hash of the serialized header, we obtain the block hash. Once a nonce that satisfies the PoW condition has been found, the miner advertises the mined block on the network. Other nodes on the network check that the block has been mined correctly by hashing the block header and checking if it satisfies the PoW condition.
 
 Miners in Ethereum are rewarded by a predetermined block reward and by the transaction fees from the transactions they include in the block. Reward distribution is done by including the account address of the miner in the block's header. This is called the block's \emph{coinbase}. Miners also do not coordinate mining blocks and race against each other to mine the next block in the block chain. Since there is no coordination, it is possible for more than one block to be generated simultaneously. If this happens, then one block will be chosen to be added onto the main block chain, and the other blocks become \emph{uncle blocks}. Miners are still rewarded for producing uncle blocks, but the reward is not as high as for producing a normal block.
 
@@ -246,9 +248,9 @@ The block synchronization protocol flow in unmodified Ethereum is the following:
   \begin{enumerate}
     \item $P_1$ and $P_2$ send a \textsc{Status} message to each other. The \textsc{Status} message contains a field for the latest block number each peer has.
     \item $P_2$ notices that its latest block number $H$ is less than $P_1$'s latest block number $K$. $P_2$ sends \textsc{GetBlockHeaders} to request block headers for blocks $b_{H + 1}, \ldots, b_{K}$ from $P_1$. \label{syncprotocol:requestBlockHeaders}
-    \item $P_1$ replies with a \textsc{BlockHeaders} message, containing a list of block headers. \label{syncprotocol:replyBlockHeaders}
+    \item $P_1$ replies with a \textsc{BlockHeaders} message, containing a list of block headers that $P_2$ requeested. \label{syncprotocol:replyBlockHeaders}
     \item $P_2$ receives block headers and determines which blocks need to be downloaded from $P_1$. Blocks only need to be downloaded if they are not empty blocks and $P_2$ can determine which blocks are empty from the block headers. $P_2$ sends \textsc{GetBlockBodies} to $P_1$ to request \emph{block bodies}, which are parts of the blocks excluding the header. \label{syncprotocol:requestBlockBodies}
-    \item $P_1$ replies with \textsc{BlockBodies} containing the bodies of blocks $P_2$ requested. \label{syncprotocol:replyBlockBodies}
+    \item $P_1$ replies with a \textsc{BlockBodies} message, containing a list of block bodies blocks that $P_2$ requested. \label{syncprotocol:replyBlockBodies}
     \item For each block body $P_2$ receives, $P_2$ matches the body with the corresponding block header it received in step~\ref{syncprotocol:replyBlockBodies}. Blocks are matched by comparing the root hashes of the transaction trie and the uncle block trie. After matching, the only headers without a body are empty blocks. For each unmatched header, $P_2$ creates a default empty block body. \label{syncprotocol:match}
     \item Now that all block headers and block bodies have been downloaded, they may be combined to form blocks $b_{H + 1}, \ldots, b_{K}$. $P_2$ then stores these blocks in its blockchain database. \label{syncprotocol:reconstruct}
   \end{enumerate}
@@ -265,23 +267,23 @@ The modifications that were made to this protocol are the following:
 
 \section{Evaluation}
 
-\section{Correctness}
+\subsection{Correctness}
 
 I tested my implementation for stateless clients for correctness by syncing blocks from one instance of Parity to another. The first instance of Parity downloaded blocks from the real Ethereum blockchain and calculated the witness for the block. It then sent the modified block to the second instance of Parity, which was running with the stateless client modifications.
 
 The stateless client Parity instance executed each block using the provided witness for any operations involving the Ethereum state. The stateless client is only able to verify blocks with the witness correctly if the state root hash after executing the transactions within the block matches the state root hash calculated by an unmodified Parity instance. I was able to verify that all blocks in the Ethereum blockchain, up to block 7.3 million, are correctly verified by the stateless client.
 
-\section{Results}
+\subsection{Results}
 
 I tested the stateless clients in a variety of experiments. The purpose of these experiments were to determine if stateless clients is a viable solution to the scalability problems in Ethereum.
 
-\subsection{Witness Sizes}
+\subsubsection{Witness Sizes}
 
-\subsection{Directory Size}
+\subsubsection{Directory Size}
 
-\subsection{Verification Time}
+\subsubsection{Verification Time}
 
-\subsection{Database Operations}
+\subsubsection{Database Operations}
 
 \section{Related Work}
 
