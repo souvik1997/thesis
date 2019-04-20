@@ -73,7 +73,7 @@ The structure of this paper is as follows: first, I will review some foundationa
 
 \subsection{Ethereum Virtual Machine}
 
-Ethereum is a platform for deploying and running smart contracts. These smart contracts run in the Ethereum Virtual Machine, or EVM. Contracts are created with the \emph{Solidity} programming language, and compile to EVM opcodes.
+Ethereum is a platform for deploying and running smart contracts. Smart contracts are programs that enforce a contract and run in the Ethereum Virtual Machine, or EVM. Smart contracts are created with the \emph{Solidity} programming language, and compile to EVM opcodes. The Ethereum blockchain is replicated on many nodes and all nodes verify the correct execution of the smart contract. This makes smart contracts useful for self-executing agreements between two parties.
 
 These EVM opcodes allow the EVM to be Turing complete, limited only by the following factors:
 \begin{enumerate}
@@ -96,7 +96,20 @@ These EVM opcodes allow the EVM to be Turing complete, limited only by the follo
 
 Each account in Ethereum is identified by a 160-bit address, and accounts can either belong to smart contracts or individuals. Smart contract addresses are determined when a contract is created using metadata from the account of the contract creator (the sender of the contract create transaction). Individual accounts use public and private keys, and the account address is the rightmost 160 bits of the SHA-3 (Keccak) hash of the public key. % footnote: explain Keccak vs SHA-3???
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/background/transactions/example_transaction.png}
+  \caption{An example transaction, with sender and receiver addresses. Transactions are uniquely identified by their hash.}
+\end{figure}
+
 \emph{Blocks} in Ethereum are collections of transactions. Blocks contain transactions and a \emph{header}, which contains metadata about the block. One field in the header is the \emph{parent block hash}. Blocks ``build'' on top of previous blocks by including the SHA-3 hash of the previous block in the block header. This forms a ``hash chain'' of blocks. The hash chain makes it impossible to modify previous blocks, since doing so would change the hash of the modified block and all blocks afterwards.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/background/blocks/blocks.pdf}
+  \caption{A block hash chain with 132322 blocks; the last 3 blocks are displayed. Block hashes are shown below each block. The full hash is 256 bits, but only the first and last 16 bits are shown for gbrevity.}
+\end{figure}
+
 
 \subsection{Recursive-Length-Prefix (RLP) Encoding}
 
@@ -106,14 +119,24 @@ Ethereum has a native serialization encoding called Recursive Length Prefix (RLP
 
 Ethereum stores account balances and other account metadata in a data structure called a \emph{Merkle-Patricia trie}. A Merkle-Patricia trie builds upon both radix tries and Merkle trees. Each node in the trie is hashed by first serializing with RLP, then using the SHA-3 hash function. This builds a key-value map of node hashes to nodes.
 
-% TODO: Insert figure here
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/background/trie/tree_nodes.pdf}
+  \caption{Trie nodes, indexed by their hash.} \label{fig:trienodes}
+\end{figure}
 
 Nodes connect with their children by using their hash, which is stored inside the node. This makes the hash of a node dependent on the hashes of its children, which are dependent on the hashes of the grandchildren, and so on. The hash of the root node can then be used to uniquely identify the entire trie.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/background/trie/tree_with_merkle_proof.pdf}
+  \caption{The Merkle-Patricia trie. The nodes in green represent the Merkle proof for the account with a balance of 12 ETH.} \label{fig:trie}
+\end{figure}
 
 Merkle-Patricia tries also allow one to \emph{verify} values in the trie using a \emph{Merkle proof}. A Merkle proof of a value is the set of nodes along the path to the value in the trie. If someone knows the root hash of the trie, and has a Merkle proof of a value, they can verify that this value exists in the trie.
 
 
-Merkle-Patricia tries are used to store the Ethereum \emph{world state}, as well as contract storage, transactions within a block, and block receipts. The Ethereum world state is the state of all accounts in Ethereum and is uniquely identified by the SHA-3 hash of the root node. Every time a value of an account changes, the hash of the root node also changes.
+Merkle-Patricia tries are used to store the Ethereum \emph{world state}, as well as contract storage, transactions within a block, and block receipts. The Ethereum world state is the state of all accounts in Ethereum and is uniquely identified by the SHA-3 hash of the root node. Every time a value of an account changes, the hash of the root node also changes. For example, in Figure~\ref{fig:trie}, the state root hash is \texttt{0xb45a...3e33}, as shown in Figure~\ref{fig:trienodes}.
 
 Ethereum is a transaction-based state machine, since applying a transaction to a state $S$ produces a new state $S'$. The hash of the root node (also known as the ``state root hash'') is stored in the block header, uniquely identifying the state produced after executing the transactions in that block.
 

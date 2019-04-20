@@ -2,5 +2,5 @@
 
 # PowerPoint autosave
 ~$*.pptx
-*.pdf
+main.pdf
 auto
