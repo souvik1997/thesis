@@ -300,7 +300,7 @@ I tested my implementation for stateless clients for correctness by sending bloc
 
 The stateless client Parity instance executed each block using the provided witness for any operations involving the Ethereum state. The stateless client is only able to verify blocks with the witness correctly if the state root hash after executing the transactions within the block matches the state root hash calculated by an unmodified Parity instance. I was able to verify that all blocks in the Ethereum blockchain, up to block 7.3 million, are correctly verified by the stateless client.
 
-\subsection{Results}
+\subsection{Results} \label{subsection:results}
 
 I tested the stateless clients in a variety of experiments. The purpose of these experiments were to determine if stateless clients is a viable solution to the scalability problems in Ethereum. All experiments were run on a INSERT SYSTEM SPECIFICATIONS HERE.
 
@@ -317,7 +317,7 @@ The first experiment I ran measured witness sizes. I imported the first 7.3 mill
 
 Figure~\ref{fig:witnesssize} shows the average witness size per block. There is a lot of variability in witness sizes, so the graph shows a rolling average over the last 2000 blocks at each block number. The average witness size is 723 KB over all blocks. Witness size also generally increases with block number. This is because later blocks tend to contain more transactions than earlier blocks, so more state trie nodes are required for block execution. The size of the state trie also grows as more users create Ethereum accounts, further increasing the witness size. Finally, increasing popularity of smart contracts that can potentially touch many accounts in a single transaction also contributes to witness size.
 
-The largest witness size was 49.2 MB at block 2306350. The large spikes in the graph from blocks 2.3 to 2.7 million are from a DDoS attack on the Ethereum network in late 2016. This attack created millions of dead Ethereum accounts and significantly increased the size of the state trie. As a result, the witness sizes for blocks in this range are also very large, since they contain millions of newly created account data.
+The largest witness size was 49.2 MB at block 2306350. The large spikes in the graph from blocks 2.3 to 2.7 million are from a DDoS attack on the Ethereum network in late 2016. This attack created millions of dead Ethereum accounts and significantly increased the size of the state trie. As a result, the witness sizes for blocks in this range are also very large, since they contain millions of newly created accounts.
 
 One important detail to note is that the witness size is \emph{much} larger than the block size excluding the witness. Figure~\ref{fig:blocksize} shows the block sizes excluding the witness, which is the same as the block sizes in unmodified Ethereum.
 
@@ -349,6 +349,8 @@ The disk space required for running a stateful client grows much more quickly th
   \label{fig:projectedondisksize}
 \end{figure}
 
+The projected data in Figure~\ref{fig:projectedondisksize} was obtained by using cumulative sums of block size and witness size. If this experiment had continued, then the actual disk usage would be slightly less than the proejcted usage. This is because RocksDB compresses blockchain data. However, even with the projected data it is apparent that the space required to store witnesses for each block makes the stateless clients proposal impractical. Currently a new Ethereum block is mined every 15 seconds. Using the projected rate of disk usage growth, 1.7 MB of data will have to be stored per new block, amounting to 9.8 GB of additional disk usage per day.
+
 \subsubsection{Verification Time}
 
 \subsubsection{Database Operations}
@@ -357,7 +359,26 @@ One advantage of stateless clients is that the number of database operations is 
 
 \section{Related Work}
 
+There are several other potential solutions to scaling blockchains.
+
+\subsection{Ethereum 2.0 Sharding}
+
+Stateless clients is part of a larger effort within the Ethereum community to develop \emph{Ethereum 2.0}. Ethereum 2.0 is a set of specifications for the next version of Ethereum. One of the ideas proposed in Ethereum 2.0 is to \emph{shard} the blockchain. Currently, all Ethereum nodes process all transactions. Once a block is mined, it is broadcast to the whole network and every Ethereum node verifies the block independently. The problem with this approach is that the throughput of the entire system is limited by the throughput of a single node.
+
+Ethereum 2.0 Sharding proposes to split the blockchain and state trie into partitions called \emph{``shards''}. One sharding scheme is to create shards based on account addresses. For example, all account addresses starting with \texttt{0x0...} would be in one shard, all account addresses starting with \texttt{0x1...} would be in another shard, and so on until account addresses starting with \texttt{0xf...}. This scheme creates 16 shards, one for each hexadecimal digit from \texttt{0x0} to \texttt{0xf}. Within a shard, Ethereum transactions are the same as in the current version of Ethereum. Intra-shard transaction execution is not changed, but there is a complex protocol to handle inter-shard transactions. % TODO: explain this?
+
+\subsection{Hyperledger Fabric}
+
+
+
+\subsection{RainBlock} \label{subsection:rainblock}
+
+
+
 \section{Future Work}
+
+One area that could be explored in the future is different techniques for reducing witness size. In Section~\ref{subsection:results}, I showed how the witness sizes make the stateless clients proposal impractical to use. However, using techniques such as witness revision and caching, it is possible that witness sizes could be reduced. RainBlock (Section~\ref{subsection:rainblock}) does this.
+
 
 \section{Conclusion}
 
