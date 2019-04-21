@@ -158,7 +158,7 @@ Miners in Ethereum are rewarded by a predetermined block reward and by the trans
 
 \section{Design}
 
-The stateless clients proposal, as the name suggests, changes Ethereum such that Ethereum nodes no longer need to store the Merkle-Patricia trie storing the Ethereum state. The proposal accomplishes this by changing the Ethereum state transition function. The original Ethereum state transition function is the following:
+The stateless clients proposal, as the name suggests, changes Ethereum such that Ethereum nodes no longer need to store the Merkle-Patricia trie storing the Ethereum state. The term ``client'' is a synonym for ``node''. The proposal accomplishes this by changing the Ethereum state transition function. The original Ethereum state transition function is the following:
 \begin{align*}
   STF(S, B) &\to S'
 \end{align*}
@@ -331,7 +331,23 @@ One important detail to note is that the witness size is \emph{much} larger than
 
 \subsubsection{Directory Size}
 
-One closely related statistic to witness size is the directory size of the Parity data directory. Parity keeps all data inside a directory specified on the command line with the \texttt{--base-path} argument. This data includes serialized and compressed blocks and the state trie, stored in a RocksDB database. I ran a \emph{stateful} Parity node in this experiment. A stateful Parity node uses the same stateless client code, but also maintains its own state trie just as in unmodified Ethereum. Stateful nodes are useful because they act as \emph{translators}; they act as a bridge between the existing Ethereum nodes and stateless nodes by generating witnesses from existing blocks and broadcasting them on the stateless node network. The disk space required for stateful nodes is significant INSERT FIGURE HERE SHOWING HOW THIS IS SIGNIFICANT (5+X LARGER).
+One closely related statistic to witness size is the directory size of the Parity data directory. Parity keeps all data inside a directory specified on the command line with the \texttt{--base-path} argument. This data includes serialized blocks and the state trie, stored in a RocksDB database. I ran a \emph{stateful} Parity node in this experiment. A stateful Parity node uses the same stateless client code, but also maintains its own state trie just as in unmodified Ethereum. Stateful nodes are useful because they act as \emph{translators}; they act as a bridge between the existing Ethereum nodes and stateless nodes by generating witnesses from existing blocks and broadcasting them on the stateless node network. The disk space required for stateful nodes is significantly larger than the space required for an unmodified Parity node, as shown in Figure~\ref{fig:ondisksize}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/results/graphs/background/on-disk-size.pdf}
+  \caption{On disk size of stateful client and unmodified client, per block number.}
+  \label{fig:ondisksize}
+\end{figure}
+
+The disk space required for running a stateful client grows much more quickly than for running an unmodified Parity client. Due to space constraints, stateful client disk usage was only able to be collected for the first 2.3 million blocks. However, using the data from Figures~\ref{fig:witnesssize}~and~\ref{fig:blocksize}, we are able to project what the on disk size would be if the experiment had continued.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/results/graphs/background/projected-on-disk-size.pdf}
+  \caption{Projected on disk size of stateful client and stateless client, compared to actual on disk size of unmodified client.}
+  \label{fig:projectedondisksize}
+\end{figure}
 
 \subsubsection{Verification Time}
 
