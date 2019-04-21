@@ -172,6 +172,9 @@ Here, $r_S$ is the state root hash for $S$, $B$ is a block, and $r_{S'}$ is the 
 
 The only nodes that need to access the state trie are miners. In vanilla Ethereum, miners create blocks by including transactions and performing the Proof-of-Work algorithm. The stateless clients proposal adds an additional step: generate the witness for the block. Miners need to execute the transactions in the block using their local copy of the Ethereum state trie, and keep track of which state values were accessed to obtain Merkle proofs. The set of Merkle proofs is the witness.
 
+\subsection{Example}
+
+
 
 \section{Implementation}
 
@@ -293,21 +296,48 @@ The modifications that were made to this protocol are the following:
 
 \subsection{Correctness}
 
-I tested my implementation for stateless clients for correctness by syncing blocks from one instance of Parity to another. The first instance of Parity downloaded blocks from the real Ethereum blockchain and calculated the witness for the block. It then sent the modified block to the second instance of Parity, which was running with the stateless client modifications.
+I tested my implementation for stateless clients for correctness by sending blocks from one instance of Parity to another. The first instance of Parity downloaded blocks from the real Ethereum blockchain and calculated the witness for the block. It then sent the modified block to the second instance of Parity, which was running with the stateless client modifications.
 
 The stateless client Parity instance executed each block using the provided witness for any operations involving the Ethereum state. The stateless client is only able to verify blocks with the witness correctly if the state root hash after executing the transactions within the block matches the state root hash calculated by an unmodified Parity instance. I was able to verify that all blocks in the Ethereum blockchain, up to block 7.3 million, are correctly verified by the stateless client.
 
 \subsection{Results}
 
-I tested the stateless clients in a variety of experiments. The purpose of these experiments were to determine if stateless clients is a viable solution to the scalability problems in Ethereum.
+I tested the stateless clients in a variety of experiments. The purpose of these experiments were to determine if stateless clients is a viable solution to the scalability problems in Ethereum. All experiments were run on a INSERT SYSTEM SPECIFICATIONS HERE.
 
 \subsubsection{Witness Sizes}
 
+The first experiment I ran measured witness sizes. I imported the first 7.3 million blocks from the Ethereum blockchain into the modified Parity Ethereum client and generated witnesses for them. The block import process is the same as the block verification process, so no changes had to be made to the client in order to generate witnesses for imported blocks.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/results/graphs/background/witness-size.pdf}
+  \caption{Average witness size vs. block number}
+  \label{fig:witnesssize}
+\end{figure}
+
+Figure~\ref{fig:witnesssize} shows the average witness size per block. There is a lot of variability in witness sizes, so the graph shows a rolling average over the last 2000 blocks at each block number. The average witness size is 723 KB over all blocks. Witness size also generally increases with block number. This is because later blocks tend to contain more transactions than earlier blocks, so more state trie nodes are required for block execution. The size of the state trie also grows as more users create Ethereum accounts, further increasing the witness size. Finally, increasing popularity of smart contracts that can potentially touch many accounts in a single transaction also contributes to witness size.
+
+The largest witness size was 49.2 MB at block 2306350. The large spikes in the graph from blocks 2.3 to 2.7 million are from a DDoS attack on the Ethereum network in late 2016. This attack created millions of dead Ethereum accounts and significantly increased the size of the state trie. As a result, the witness sizes for blocks in this range are also very large, since they contain millions of newly created account data.
+
+One important detail to note is that the witness size is \emph{much} larger than the block size excluding the witness. Figure~\ref{fig:blocksize} shows the block sizes excluding the witness, which is the same as the block sizes in unmodified Ethereum.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{../figures/results/graphs/background/block-size.pdf}
+  \caption{Average block size (excluding witness) vs. block number}
+  \label{fig:blocksize}
+\end{figure}
+
+
 \subsubsection{Directory Size}
+
+One closely related statistic to witness size is the directory size of the Parity data directory. Parity keeps all data inside a directory specified on the command line with the \texttt{--base-path} argument. This data includes serialized and compressed blocks and the state trie, stored in a RocksDB database. I ran a \emph{stateful} Parity node in this experiment. A stateful Parity node uses the same stateless client code, but also maintains its own state trie just as in unmodified Ethereum. Stateful nodes are useful because they act as \emph{translators}; they act as a bridge between the existing Ethereum nodes and stateless nodes by generating witnesses from existing blocks and broadcasting them on the stateless node network. The disk space required for stateful nodes is significant INSERT FIGURE HERE SHOWING HOW THIS IS SIGNIFICANT (5+X LARGER).
 
 \subsubsection{Verification Time}
 
 \subsubsection{Database Operations}
+
+One advantage of stateless clients is that the number of database operations is greatly reduced. Compare the amount of operations done in unmodified Ethereum INSERT FIGURE HERE (ALREADY HAVE DATA). The number of database operations for stateless clients is constant (IS THIS TRUE? NEED TO CHECK)
 
 \section{Related Work}
 
