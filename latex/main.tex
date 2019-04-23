@@ -1,6 +1,7 @@
 \documentclass[12pt]{article}
 \usepackage[letterpaper, margin=1in]{geometry}
 \usepackage{graphicx}
+\usepackage{hyperref}
 \usepackage{flafter}
 \usepackage{enumitem}
 \usepackage{float}
@@ -71,7 +72,6 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 \newpage
 
 
-
 \section{Introduction}
 
 % reword first two sentences
@@ -121,7 +121,7 @@ Each account in Ethereum is identified by a 160-bit address, and accounts can ei
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{../figures/background/transactions/example_transaction.png}
-  \caption{An example transaction, with sender and receiver addresses. Transactions are uniquely identified by their hash. This is the SHA-3 hash of the serialized transaction (Section \ref{subsection:rlp}).}
+  \caption{An example transaction, with sender and receiver addresses. Transactions are uniquely identified by their hash. This is the SHA-3 hash of the serialized transaction (Section~\ref{subsection:rlp}).}
 \end{figure}
 
 \emph{Blocks} in Ethereum are collections of transactions. Blocks contain transactions and a \emph{header}, which contains metadata about the block. One field in the header is the \emph{parent block hash}. Blocks ``build'' on top of previous blocks by including the SHA-3 hash of the previous block in the block header. This forms a ``hash chain'' of blocks. The hash chain makes it impossible to modify previous blocks. Modifying a previous block would change the hash of the modified block and all blocks afterward.
@@ -165,8 +165,7 @@ Ethereum is a transaction-based state machine, since applying a transaction to a
  % TODO: should I go into more detail? it is pretty complicated and would take a few paragraphs to describe fully
 
 \subsection{Consensus} \label{subsection:consensus}
-Ethereum supports multiple consensus protocols, but the protocol that is most popular is \emph{Proof-Of-Work} (PoW). Proof-of-work deters abuse by requiring that nodes perform some work. This consensus protocol requires that nodes send proofs that the work has been done. These proofs are easy to verify, but are difficult to obtain.
-
+Ethereum supports multiple consensus protocols, but the protocol that is most popular is \emph{Proof-Of-Work} (PoW). Proof-Of-Work deters abuse by requiring that nodes perform computationally intensive tasks. This consensus protocol requires that nodes send proofs that the computationally intensive work has been done. These proofs are easy to verify, but are difficult to create.
 
 In PoW, blocks must be \emph{mined} before they are added to the hash chain. Nodes which mine blocks are called \emph{miners}. Any node in Ethereum may choose to be a miner.
 Miners mine blocks by choosing values for the \emph{nonce}, a field in a block's header. A block is successfully mined if the block's hash satisfies a certain condition. By modifying the nonce field in the block header, serializing the block header with RLP, and finding the SHA-3 hash of the serialized header, we obtain the block hash. Once a nonce that satisfies the PoW condition has been found, the miner advertises the mined block on the network. Other nodes on the network check that the block has been mined correctly by hashing the block header and checking if it satisfies the PoW condition.
@@ -178,6 +177,8 @@ Miners in Ethereum are rewarded by a predetermined block reward and by the trans
 % https://www.bbc.com/news/technology-42237162
 
 \section{Design}
+
+\subsection{\System}
 
 The \System proposal, as the name suggests, changes Ethereum such that Ethereum nodes no longer need to store the Merkle-Patricia trie storing the Ethereum state. The term ``client'' is a synonym for ``node''. The proposal accomplishes this by changing the Ethereum state transition function. The original Ethereum state transition function is the following:
 \begin{align*}
@@ -191,7 +192,7 @@ The \System proposal changes the state transition function to $STF'$, which is d
 \end{align*}
 Here, $r_S$ is the state root hash for $S$, $B$ is a block, and $r_{S'}$ is the state root hash for $S'$. $W$ is a ``witness'', which are Merkle proofs for each value in the state trie the execution of $B$ needs to access. These witnesses are packaged along with blocks and are sent over the network to other Ethereum nodes. Since witnesses contain the state values the execution of $B$ requires, Ethereum nodes do not need to access the state trie when verifying blocks.
 
-The only nodes that need to access the state trie are miners. In vanilla Ethereum, miners create blocks by including transactions and performing the Proof-of-Work algorithm. The \System proposal adds an additional step: generate the witness for the block. Miners need to execute the transactions in the block using their local copy of the Ethereum state trie, and keep track of which state values were accessed to obtain Merkle proofs. The set of Merkle proofs is the witness for the block.
+The only nodes that need to access the state trie are miners. In vanilla Ethereum, miners create blocks by including transactions and performing the Proof-Of-Work algorithm. The \System proposal adds an additional step: generate the witness for the block. Miners need to execute the transactions in the block using their local copy of the Ethereum state trie, and keep track of which state values were accessed to obtain Merkle proofs. The set of Merkle proofs is the witness for the block.
 
 \subsection{Example}
 
@@ -255,9 +256,9 @@ After the nonce is obtained, the block is broadcast to other Ethereum nodes. The
   \item Execute transaction and apply block reward using the reconstructed Merkle-Patricia trie.
 \end{enumerate}
 
-Stateless client block verification starts by first receiving a block with witnesses from a miner (Figure~\ref{fig:example:block}). The verifier then reconstructs the Merkle-Patricia state trie using the witnesses in the block. It deserializes the nodes and inserts them into a \texttt{HashMap}, where the key for each node is the SHA-3 hash of the node. Recall from Section~\ref{subsection:merklepatriciatrie} that nodes in a Merkle-Patricia trie link to other nodes using their SHA-3 hash. Using a \texttt{HashMap} makes looking up a trie node by its hash efficient. Hashing each node also implicitly verifies the witness, since a malformed witness would have incorrect hashes and the trie would not be able to be reconstructed completely.
+Stateless client block verification starts by first receiving a block with witnesses from a miner (Figure~\ref{fig:example:block}). The verifier then reconstructs the Merkle-Patricia state trie using the witnesses in the block. It deserializes the nodes and inserts them into a \texttt{HashMap}, where the key for each node is the SHA-3 hash of the node. Recall from Section~\ref{subsection:merklepatriciatrie} that nodes in a Merkle-Patricia trie link to other nodes using their SHA-3 hash. \texttt{HashMap}s make looking up nodes by their hash efficient. Hashing each node also implicitly verifies the witness, since a malformed witness would have incorrect hashes and the trie would not be able to be reconstructed completely.
 
-To determine which node is the root of the trie, the verifier uses the \emph{parent block hash} to look up the block header of the previous block. The previous block's header contains a \emph{state root} field, which is the state root for the current block. The reconstructed trie is shown in \ref{fig:example:reconstructed}.
+To determine which node is the root of the trie, the verifier uses the \emph{parent block hash} to look up the block header of the previous block. The previous block's header contains a \emph{state root} field, which is the state root for the current block. The reconstructed trie is shown in Figure~\ref{fig:example:reconstructed}.
 
 \begin{figure}[H]
   \centering
@@ -322,17 +323,11 @@ The ``standard'' backend that Parity uses is the \texttt{StateDB} backend. \text
 
 \subsubsection{Witness Creation}
 
-Witnesses are generated when a block is created, and the process of block creation involves the following steps:
-\begin{enumerate}
-  \item Select transactions from transaction pool
-  \item Execute transactions to find new state root hash
-  \item Find nonce for block (``mining'')
-\end{enumerate}
 In Parity, blocks are created by a \texttt{Miner} object. Since the \texttt{Miner} object executes transactions, it needs access to the Ethereum state, provided by a \texttt{State} object and a \texttt{Backend} object. I replaced the \texttt{StateDB} backend that the \texttt{Miner} uses with a backend I created called \texttt{WitnessCreate}. The \texttt{WitnessCreate} backend \emph{intercepts} \texttt{Get(key)} and \texttt{Contains(key)} calls and records the values retrieved from the state database. The rest of the methods required for the \texttt{Backend} trait are implemented the same as in \texttt{StateDB}. After all transactions have been executed, the values recorded by \texttt{WitnessCreate} are extracted with a function called \texttt{extractWitness}. This witness is broadcast to the Ethereum network along with the block data once the miner successfully mines the block.
 
 \subsubsection{Witness Verification}
 
-Block verification in Ethereum is fairly simple. Blocks that are freshly mined are broadcast on the Ethereum network to other nodes, which download these blocks, verifies them, and finally imports them into their local block chain. Block verification has several phases:
+Block verification in Parity has several phases:
 \begin{enumerate}
   \item \texttt{verify\_block\_basic}: Checks block integrity, header parameter integrity, and verifies seals for the block and uncles
   \item \texttt{verify\_block\_unordered}: Checks transaction signatures and block nonce
@@ -341,7 +336,7 @@ Block verification in Ethereum is fairly simple. Blocks that are freshly mined a
   \item \texttt{verify\_block\_final}: Executes the transactions in the block, and checks block information against block execution results. This step makes sure the resulting state root, gas used, log bloom filter, and receipts root match what is recorded in the block header.
 \end{enumerate}
 
-I modified the final step of the block verification process to use a \texttt{WitnessCheck} state backend instead of \texttt{StateDB}. When constructing the \texttt{WitnessCheck}, we use the witness that is broadcast with the block. The \texttt{WitnessCheck} backend implements the methods in Figure~\ref{fig:backendmethods} by using the witness. \texttt{Insert(value)} and \texttt{Emplace(key, value)} are implemented by using an in-memory \texttt{HashMap} to record all write operations to the \texttt{WitnessCheck} backend. \texttt{Get(key)} is implemented by looking for values in the witness that have a SHA-3 hash equal to the \texttt{key}. If no values exist, then the in-memory \texttt{HashMap} is checked. This handles the case when a new value is written and later read from during transaction execution. \texttt{Contains(key)} is implemented by using the same logic as \texttt{Get(key)}, and \texttt{Remove(key)} only removes values from the in-memory \texttt{HashMap} leaving the witness data untouched. There are no read or write operations to the RocksDB state database when verifying blocks.
+I modified the final step of the block verification process to use a \texttt{WitnessCheck} state backend instead of \texttt{StateDB}. When constructing the \texttt{WitnessCheck}, I use the witness that is broadcast with the block (Figure~\ref{fig:parityrelationships}). The \texttt{WitnessCheck} backend implements the methods in Figure~\ref{fig:backendmethods} by using this witness. \texttt{Insert(value)} and \texttt{Emplace(key, value)} are implemented by using an in-memory \texttt{HashMap} to record all write operations to the \texttt{WitnessCheck} backend. \texttt{Get(key)} is implemented by looking for values in the witness that have a SHA-3 hash equal to the \texttt{key}. If no values exist, then the in-memory \texttt{HashMap} is checked. This handles the case when a new value is written and later read from during transaction execution. \texttt{Contains(key)} is implemented by using the same logic as \texttt{Get(key)}, and \texttt{Remove(key)} only removes values from the in-memory \texttt{HashMap} leaving the witness data untouched. There are no read or write operations to the RocksDB state database when verifying blocks.
 
 \subsection{Serialization of witnesses}
 An RLP serialized block has the following layout:
@@ -405,7 +400,7 @@ The block sync protocol in Ethereum also needed to be changed. Ethereum nodes us
 The block synchronization protocol flow in unmodified Ethereum is described in Figure~\ref{syncprotocol}. First, peers send a \textsc{Status} message to each other. The \textsc{Status} message notifies all participants of the latest block number present in every node. Nodes that need more blocks can request blocks from the node with a greater latest block number. The key part of the sync protocol is that blocks are split into \emph{headers} and \emph{bodies} that are sent separately. First, block headers are requested and sent (step~\ref{syncprotocol:requestBlockHeaders}). Then, in step~\ref{syncprotocol:requestBlockBodies}, block bodies are requested for \emph{non-empty} blocks. A block is \emph{empty} if the block body contains no transactions or uncle block headers. Nodes are able to tell if blocks are empty by reading the block header. If a block is empty, then there is no need to request and send an empty body.
 
 
-This protocol cannot be used for \System without modifications. The reason is that no block in \System is ``empty'', each block at least contains a witness for the block. Even if a block contains no transactions or uncle blocks, it still updates the Ethereum world state because the miner of the block gets rewarded. Rewarding the miner is done by increasing the balance in the miner's account, and the Ethereum node needs to have a Merkle proof of the balance of the miner's account.
+This protocol cannot be used for \System without modifications. The reason is that no block in \System is ``empty'', each block at least contains a witness for the block. Even if a block contains no transactions or uncle blocks, it still updates the Ethereum world state because the miner of the block gets rewarded. Rewarding the miner is done by increasing the balance in the miner's account, and the Ethereum node needs to have a Merkle proof of the current balance of the miner's account.
 
 The modifications that were made to this protocol are the following:
 \begin{enumerate}
@@ -458,11 +453,11 @@ One closely related statistic to witness size is the directory size of the Parit
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{../figures/results/graphs/background/on-disk-size.pdf}
-  \caption{on-disk size of stateful client and unmodified client, per block number.}
+  \caption{On-disk size of stateful client and unmodified client vs. block number.}
   \label{fig:ondisksize}
 \end{figure}
 
-The disk space required for running a stateful client grows much more quickly than for running an unmodified Parity client. Due to space constraints, stateful client disk usage was only able to be collected for the first 2.3 million blocks. However, using the data from Figures~\ref{fig:witnesssize}~and~\ref{fig:blocksize}, we are able to project what the on-disk size would be if the experiment had continued.
+The disk space required for running a stateful client grows much more quickly than for running an unmodified Parity client. Due to space constraints, I was only able to collect disk usage data for the stateful client only for the first 2.3 million blocks. However, using the data from Figures~\ref{fig:witnesssize}~and~\ref{fig:blocksize}, we are able to project what the on-disk size would be if the experiment had continued.
 
 \begin{figure}[H]
   \centering
@@ -471,7 +466,7 @@ The disk space required for running a stateful client grows much more quickly th
   \label{fig:projectedondisksize}
 \end{figure}
 
-The projected data in Figure~\ref{fig:projectedondisksize} was obtained by using cumulative sums of block size and witness size. If this experiment had continued, then the actual disk usage would be slightly less than the projected usage. This is because RocksDB compresses blockchain data. However, even with the projected data, it is clear that the space required to store witnesses for each block makes the \System proposal impractical. Currently, a new Ethereum block is mined every 15 seconds. Using the projected rate of disk usage growth, 1.7 MB of data will have to be stored per new block, amounting to 9.8 GB of additional disk usage per day.
+The projected data in Figure~\ref{fig:projectedondisksize} was obtained by using cumulative sums of block size and witness size, since the stateful client needs to store the block with its witness locally. If this experiment had continued, then the actual disk usage would be slightly less than the projected usage. This is because RocksDB compresses blockchain data. However, even with the projected data, it is clear that the space required to store witnesses for each block makes the \System proposal impractical. Currently, a new Ethereum block is mined every 15 seconds. Using the projected rate of disk usage growth, 1.7 MB of data will have to be stored per new block, amounting to 9.8 GB of additional disk usage per day.
 
 \subsubsection{Verification Time}
 
