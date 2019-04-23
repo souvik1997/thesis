@@ -1,5 +1,5 @@
 \documentclass[12pt]{article}
-\usepackage[letterpaper]{geometry}
+\usepackage[letterpaper, margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{flafter}
 \usepackage{enumitem}
@@ -73,7 +73,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 % reword first two sentences
 
 In the last few years, blockchain technology has become increasingly popular.
-Blockchain is a decentralized data sharing technology that works in a distributed environment consisting of multiple nodes. It can be defined as a immutable \emph{ledger} that records transactions. The blockchain structure consists of cryptographically signed \emph{blocks} that are linked to each other with cryptographic hashes. Each block contains \emph{transactions} that show value transfers between different accounts. Each node in the network maintains its own copy of the blockchain, which makes the ledger a \emph{distributed ledger}. The ledger is kept up to date using a distributed consensus mechanism, which allows nodes to validate transactions, package them into blocks, and update the block hash chain.
+Blockchain is a decentralized data sharing technology that works in a distributed environment consisting of multiple nodes. It can be defined as an immutable \emph{ledger} that records transactions. The blockchain structure consists of cryptographically signed \emph{blocks} that are linked to each other with cryptographic hashes. Each block contains \emph{transactions} that show value transfers between different accounts. Each node in the network maintains its own copy of the blockchain, which makes the ledger a \emph{distributed ledger}. The ledger is kept up to date using a distributed consensus mechanism, which allows nodes to validate transactions, package them into blocks, and update the block hash chain.
 
 Blockchain and cryptocurrency are two different concepts, but their development has been intertwined. Blockchain was first suggested by Satoshi Nakamoto's paper introducing Bitcoin in late 2008. Bitcoin is a cryptocurrency and is a specific implementation of blockchain technology.
 
@@ -81,9 +81,9 @@ Ethereum is a cryptocurrency that builds upon the ideas introduced in Bitcoin. E
 
 The goal of Ethereum is to create a platform for decentralized applications, and it does this by incorporating a built-in Turing complete programming language. This allows users to write \emph{smart contracts} that contain arbitrary code and run on the decentralized Ethereum network. In contrast to Bitcoin, where transactions are simply value transfers between accounts, Ethereum transactions can create and run smart contracts. The ability to run arbitrary code makes Ethereum an extremely powerful abstraction layer on which decentralized applications can be built.
 
-One problem with blockchain-based systems is that they are orders of magnitude slower than their centralized equivalent. Ethereum is only able to process about 15 transactions per second, while payment processors like Visa can process 24,000 transactions per second. New distributed applications that run on Ethereum such as CryptoKitties have slowed down transaction processing time even further. Improving scalability of blockchain-based systems is crucial for widespread adoption.
+One problem with blockchain-based systems is that they are orders of magnitude slower than their centralized equivalent. Ethereum is only able to process about 15 transactions per second, while payment processors like Visa can process 24,000 transactions per second. New distributed applications that run on Ethereum such as CryptoKitties have slowed down transaction processing time even further. Improving the scalability of blockchain-based systems is crucial for widespread adoption.
 
-A proposed solution to Ethereum's scalability problems is called \emph{stateless clients}. Stateless Clients was proposed by Vitalik Buterin, the founder of Ethereum, in 2017. Stateless Clients aims to improve scalability by reducing I/O when verifying blocks. However, until now there has been no working prototype of stateless clients.
+A proposed solution to Ethereum's scalability problems is called \emph{Stateless Clients}. Stateless Clients was proposed by Vitalik Buterin, the founder of Ethereum, in 2017. Stateless Clients aims to improve scalability by reducing I/O when verifying blocks. However, until now there has been no working prototype of Stateless Clients.
 
 The structure of this paper is as follows: first, I will review some foundational concepts in Ethereum. Second, I will describe in more detail how Stateless Clients is designed and how I implemented Stateless Clients in Parity. Third, I will show some of the results I obtained from my implementation.
 
@@ -91,12 +91,12 @@ The structure of this paper is as follows: first, I will review some foundationa
 
 \subsection{Ethereum Virtual Machine}
 
-Ethereum is a platform for deploying and running smart contracts. Smart contracts are programs that enforce a contract and run in the Ethereum Virtual Machine, or EVM. Smart contracts are created with the \emph{Solidity} programming language, and compile to EVM opcodes. The Ethereum blockchain is replicated on many nodes and all nodes verify the correct execution of the smart contract. This makes smart contracts useful for self-executing agreements between two parties.
+Ethereum is a platform for deploying and running smart contracts. Smart contracts are programs that enforce a contract and run on the Ethereum Virtual Machine, or EVM. Smart contracts are created with the \emph{Solidity} programming language and compile to EVM opcodes. The Ethereum blockchain is replicated on many nodes and all nodes verify the correct execution of the smart contract. This makes smart contracts useful for self-executing agreements between two parties.
 
 These EVM opcodes allow the EVM to be Turing complete, limited only by the following factors:
 \begin{enumerate}
   \item Stack space: The stack has a capacity of 1024 entries, and each entry is 256 bits. The EVM is a stack-based virtual machine and the stack is used to push arguments to opcodes.
-  \item Execution time: Ethereum measures ``computational effort'' using \emph{gas}. Each opcode in a contract requires a certain amount of gas to pay for its execution. Contracts run as part of transactions, and one field in the transaction is called the \emph{gas price}. In order to pay for a contract's execution, the amount of gas consumed during the execution is multiplied by the gas price, and resulting product is deducted from the transaction sender's account.
+  \item Execution time: Ethereum measures ``computational effort'' using \emph{gas}. Each opcode in a contract requires a certain amount of gas to pay for its execution. Contracts run as part of transactions, and one field in the transaction is called the \emph{gas price}. In order to pay for a contract's execution, the amount of gas consumed during the execution is multiplied by the gas price, and the resulting product is deducted from the transaction sender's account.
   \item Memory: Memory is used for storing variables and calling functions. No hard limit exists on the amount of memory that may be used, but memory must be paid for with gas. The cost grows quadratically according to the following equation.
   % Equation 296 in the Yellow Paper
   \begin{align*}
@@ -120,12 +120,12 @@ Each account in Ethereum is identified by a 160-bit address, and accounts can ei
   \caption{An example transaction, with sender and receiver addresses. Transactions are uniquely identified by their hash.}
 \end{figure}
 
-\emph{Blocks} in Ethereum are collections of transactions. Blocks contain transactions and a \emph{header}, which contains metadata about the block. One field in the header is the \emph{parent block hash}. Blocks ``build'' on top of previous blocks by including the SHA-3 hash of the previous block in the block header. This forms a ``hash chain'' of blocks. The hash chain makes it impossible to modify previous blocks, since doing so would change the hash of the modified block and all blocks afterwards.
+\emph{Blocks} in Ethereum are collections of transactions. Blocks contain transactions and a \emph{header}, which contains metadata about the block. One field in the header is the \emph{parent block hash}. Blocks ``build'' on top of previous blocks by including the SHA-3 hash of the previous block in the block header. This forms a ``hash chain'' of blocks. The hash chain makes it impossible to modify previous blocks. Modifying a previous block would change the hash of the modified block and all blocks afterward.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{../figures/background/blocks/blocks.pdf}
-  \caption{A block hash chain with 132322 blocks; the last 3 blocks are displayed. Block hashes are shown below each block. The full hash is 256 bits, but only the first and last 16 bits are shown for gbrevity.}
+  \caption{A block hash chain with 132322 blocks; the last 3 blocks are displayed. Block hashes are shown below each block. The full hash is 256 bits, but only the first and last 16 bits are shown for brevity.}
 \end{figure}
 
 
@@ -133,7 +133,7 @@ Each account in Ethereum is identified by a 160-bit address, and accounts can ei
 
 Ethereum has a native serialization encoding called Recursive Length Prefix (RLP). RLP encodes arbitrarily nested lists of binary data. It is similar to other encoding schemes like JSON, but the range of types that are supported are limited to only lists and binary data. RLP is used to serialize blocks, transactions, and other data structures used in Ethereum.
 
-\subsection{Merkle-Patricia Trie}
+\subsection{Merkle-Patricia Trie} \label{subsection:merklepatriciatrie}
 
 Ethereum stores account balances and other account metadata in a data structure called a \emph{Merkle-Patricia trie}. A Merkle-Patricia trie builds upon both radix tries and Merkle trees. Each node in the trie is hashed by first serializing with RLP, then using the SHA-3 hash function. This builds a key-value map of node hashes to nodes.
 
@@ -143,7 +143,7 @@ Ethereum stores account balances and other account metadata in a data structure 
   \caption{Trie nodes, indexed by their hash.} \label{fig:trienodes}
 \end{figure}
 
-Nodes connect with their children by using their hash, which is stored inside the node. This makes the hash of a node dependent on the hashes of its children, which are dependent on the hashes of the grandchildren, and so on. The hash of the root node can then be used to uniquely identify the entire trie.
+Nodes connect with their children by using their hash, which is stored inside the node. This makes the hash of a node depend on the hashes of its children, which are dependent on the hashes of the grandchildren, and so on. The hash of the root node can then be used to uniquely identify the entire trie.
 
 \begin{figure}[H]
   \centering
@@ -151,21 +151,20 @@ Nodes connect with their children by using their hash, which is stored inside th
   \caption{The Merkle-Patricia trie. The nodes in green represent the Merkle proof for the account with a balance of 12 ETH.} \label{fig:trie}
 \end{figure}
 
-Merkle-Patricia tries also allow one to \emph{verify} values in the trie using a \emph{Merkle proof}. A Merkle proof of a value is the set of nodes along the path to the value in the trie. If someone knows the root hash of the trie, and has a Merkle proof of a value, they can verify that this value exists in the trie.
+Merkle-Patricia tries also allow one to \emph{verify} values in the trie using a \emph{Merkle proof}. A Merkle proof of a value is the set of nodes along the path to the value in the trie. If someone knows the root hash of the trie and has a Merkle proof of a value, they can verify that this value exists in the trie.
 
 
-Merkle-Patricia tries are used to store the Ethereum \emph{world state}, as well as contract storage, transactions within a block, and block receipts. The Ethereum world state is the state of all accounts in Ethereum and is uniquely identified by the SHA-3 hash of the root node. Every time a value of an account changes, the hash of the root node also changes. For example, in Figure~\ref{fig:trie}, the state root hash is \texttt{0xb45a...3e33}, as shown in Figure~\ref{fig:trienodes}.
+Merkle-Patricia tries are used to store the Ethereum \emph{world state}, as well as contract storage, transactions within a block, and block receipts. The Ethereum world state is the state of all accounts in Ethereum and is uniquely identified by the SHA-3 hash of the root node. Every time an account changes (for example, if the account balance changes), the hash of the root node also changes. In Figure~\ref{fig:trie}, the state root hash is \texttt{0xb45a...3e33}, as shown in Figure~\ref{fig:trienodes}.
 
 Ethereum is a transaction-based state machine, since applying a transaction to a state $S$ produces a new state $S'$. The hash of the root node (also known as the ``state root hash'') is stored in the block header, uniquely identifying the state produced after executing the transactions in that block.
 
  % TODO: should I go into more detail? it is pretty complicated and would take a few paragraphs to describe fully
 
-\subsection{Consensus}
+\subsection{Consensus} \label{subsection:consensus}
 Ethereum supports multiple consensus protocols, but the protocol that is most popular is \emph{Proof-Of-Work} (PoW). Proof-of-work deters abuse by requiring that nodes perform some work. This consensus protocol requires that nodes send proofs that the work has been done. These proofs are easy to verify, but are difficult to obtain.
 
-In the context of Ethereum, PoW is used when creating new blocks. Blocks in Ethereum must be \emph{mined} before they can be added to the hash chain. The process of mining a block is finding a
-In PoW, blocks must be \emph{mined} before they are added to the hash chain. Nodes which mine blocks are called \emph{miners}. Any node in Ethereum may choose to be a miner.
 
+In PoW, blocks must be \emph{mined} before they are added to the hash chain. Nodes which mine blocks are called \emph{miners}. Any node in Ethereum may choose to be a miner.
 Miners mine blocks by choosing values for the \emph{nonce}, a field in a block's header. A block is successfully mined if the block's hash satisfies a certain condition. By modifying the nonce field in the block header, serializing the block header with RLP, and finding the SHA-3 hash of the serialized header, we obtain the block hash. Once a nonce that satisfies the PoW condition has been found, the miner advertises the mined block on the network. Other nodes on the network check that the block has been mined correctly by hashing the block header and checking if it satisfies the PoW condition.
 
 Miners in Ethereum are rewarded by a predetermined block reward and by the transaction fees from the transactions they include in the block. Reward distribution is done by including the account address of the miner in the block's header. This is called the block's \emph{coinbase}. Miners also do not coordinate mining blocks and race against each other to mine the next block in the block chain. Since there is no coordination, it is possible for more than one block to be generated simultaneously. If this happens, then one block will be chosen to be added onto the main block chain, and the other blocks become \emph{uncle blocks}. Miners are still rewarded for producing uncle blocks, but the reward is not as high as for producing a normal block.
@@ -176,32 +175,91 @@ Miners in Ethereum are rewarded by a predetermined block reward and by the trans
 
 \section{Design}
 
-The stateless clients proposal, as the name suggests, changes Ethereum such that Ethereum nodes no longer need to store the Merkle-Patricia trie storing the Ethereum state. The term ``client'' is a synonym for ``node''. The proposal accomplishes this by changing the Ethereum state transition function. The original Ethereum state transition function is the following:
+The Stateless Clients proposal, as the name suggests, changes Ethereum such that Ethereum nodes no longer need to store the Merkle-Patricia trie storing the Ethereum state. The term ``client'' is a synonym for ``node''. The proposal accomplishes this by changing the Ethereum state transition function. The original Ethereum state transition function is the following:
 \begin{align*}
   STF(S, B) &\to S'
 \end{align*}
 Here, $S$ is the initial state, $B$ is an Ethereum block, and $S'$ is the new updated state created from applying the transactions in $B$ to $S$.
 
-The stateless clients proposal changes the state transition function to $STF'$, which is defined here:
+The Stateless Clients proposal changes the state transition function to $STF'$, which is defined here:
 \begin{align*}
   STF'(r_S, B, W) \to r_{S'}
 \end{align*}
 Here, $r_S$ is the state root hash for $S$, $B$ is a block, and $r_{S'}$ is the state root hash for $S'$. $W$ is a ``witness'', which are Merkle proofs for each value in the state trie the execution of $B$ needs to access. These witnesses are packaged along with blocks and are sent over the network to other Ethereum nodes. Since witnesses contain the state values the execution of $B$ requires, Ethereum nodes do not need to access the state trie when verifying blocks.
 
-The only nodes that need to access the state trie are miners. In vanilla Ethereum, miners create blocks by including transactions and performing the Proof-of-Work algorithm. The stateless clients proposal adds an additional step: generate the witness for the block. Miners need to execute the transactions in the block using their local copy of the Ethereum state trie, and keep track of which state values were accessed to obtain Merkle proofs. The set of Merkle proofs is the witness.
+The only nodes that need to access the state trie are miners. In vanilla Ethereum, miners create blocks by including transactions and performing the Proof-of-Work algorithm. The Stateless Clients proposal adds an additional step: generate the witness for the block. Miners need to execute the transactions in the block using their local copy of the Ethereum state trie, and keep track of which state values were accessed to obtain Merkle proofs. The set of Merkle proofs is the witness.
 
 \subsection{Example}
+
+In this section, I will show how the Stateless Clients proposal works from block creation to block verification using an example Merkle-Patricia trie and transaction.
+
+\subsubsection{Block creation}
+
+The initial Merkle-Patricia state trie is shown in Figure~\ref{fig:example:initial}. This trie contains 22 Ethereum accounts. Four accounts are shown, specifically accounts \texttt{0x1354\ldots f78b}, \texttt{0x298a\ldots e2b1}, \texttt{0x737b\ldots fc91}, \texttt{0xa98b\ldots 3645}.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,page=1]{../figures/design/example.pdf}
+  \caption{Initial Merkle-Patricia trie. This trie has 22 Ethereum accounts, shown in the last level of the trie. Four accounts are shown in an expanded view. The state root hash is \texttt{0xa34c\ldots 2f55}. The remaining empty nodes are intermediate Merkle-Patricia trie nodes.}
+  \label{fig:example:initial}
+\end{figure}
+
+Now suppose account \texttt{0x1354\ldots f78b} wants to send 10 ETH to account \texttt{0x298a\ldots e2b1}. This Ethereum transaction is submitted to an Ethereum miner node running the Stateless Clients implementation. The miner then needs to include this transaction in a block; for simplicity, assume that this is the only transaction the miner will put in the next block. The miner then needs to execute the transaction with its local copy of the state trie. While it executes the transaction, it keeps track of which accounts in the state trie were accessed. It then constructs a Merkle proof by traversing up the trie from the account that was accessed to the root node. After the transaction has been executed, the miner also needs to calculate the block reward. Recall from Section~\ref{subsection:consensus} that miners receive a reward for mining blocks. Suppose the miner's Ethereum address is \texttt{0x737b\ldots fc91} and the block reward is $5$ ETH. The miner also needs to obtain a witness for adding the block reward to its own address. Figure~\ref{fig:example:proof} shows the witnesses generated while creating the block; there are witnesses for accounts \texttt{0x1354\ldots f78b}, \texttt{0x298a\ldots e2b1}, and \texttt{0x737b\ldots fc91}. The state trie after executing the transaction and applying the block reward is shown in Figure~\ref{fig:example:newstate}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,page=3]{../figures/design/example.pdf}
+  \caption{The same Merkle-Patricia trie from Figure~\ref{fig:example:initial}, but the nodes in green are the Merkle proofs for the accounts accessed.}
+  \label{fig:example:proof}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,page=4]{../figures/design/example.pdf}
+  \caption{The updated Merkle-Patricia trie. Note that the balances for the accounts have been changed, and the state root hash is different from the state root hash in Figure~\ref{fig:example:initial}.}
+  \label{fig:example:newstate}
+\end{figure}
+
+After the witness is generated, the miner needs to create a block header. This block header contains block metadata, but most importantly for this example, it contains a field for the expected \emph{state root} after the execution of the block. This new state root was calculated earlier when executing the transaction and applying the block reward, and is shown in Figure~\ref{fig:example:newstate}. Once the block header is created, the miner can serialize and hash it in order to begin the process of obtaining a nonce for this block for Proof-Of-Work consensus. After the nonce is obtained, the block can be created and broadcast to other Ethereum nodes. The witnesses are serialized and added to the end of the block, as shown in Figure~\ref{fig:example:block}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{../figures/design/example_block.pdf}
+  \caption{The newly created block. The Merkle-Patricia nodes in the witnesses are serialized and added to the end of the block. The \emph{coinbase} field in the block header is set to the miner's account address.}
+  \label{fig:example:block}
+\end{figure}
+
+
+
+\subsubsection{Block verification}
+
+Stateless client block verification starts by first receiving a block with witnesses from a miner (Figure~\ref{fig:example:block}). The first step the verifier does is reconstruct the Merkle-Patricia state trie using the witnesses in the block. It deserializes the nodes and inserts them into a \texttt{HashMap}, where the key for each node is the SHA-3 hash of the node. This is an important step in the block verification process. Recall from Section~\ref{subsection:merklepatriciatrie} that nodes in a Merkle-Patricia trie link to other nodes using their SHA-3 hash. Using a \texttt{HashMap} makes looking up a trie node by its hash efficient. Hashing each node also implicitly verifies the witness, since a malformed witness would have incorrect hashes and the trie would not be able to be reconstructed completely. To determine which node is the root of the trie, the verifier uses the \emph{parent block hash} to look up the block header of the previous block. The previous block's header contains a \emph{state root} field, which is the state root for this current block. The reconstructed trie is shown in \ref{fig:example:reconstructed}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,page=5]{../figures/design/example.pdf}
+  \caption{The Merkle-Patricia trie reconstructed from the witness in the block.}
+  \label{fig:example:reconstructed}
+\end{figure}
+
+The verifier then executes the transaction and applies the block reward, using the reconstructed state trie to get account balances. If the transaction execution or block execution tries to access a trie node that is not in the reconstructed trie, then the witness in the block is malformed and the block is not valid. After executing the transaction and the block reward, there is a new state trie with a new state root as shown in Figure~\ref{fig:example:newconstructed}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,page=6]{../figures/design/example.pdf}
+  \caption{The updated reconstructed Merkle-Patricia trie. Note that the account balances and the state root hash have changed. The state root hash matches the expected state root hash in the block header in Figure~\ref{fig:example:block}.}
+  \label{fig:example:newconstructed}
+\end{figure}
 
 
 
 \section{Implementation}
 
-I implemented stateless clients in Parity, a popular Ethereum client written in the Rust programming language. The implementation was divided into several logical parts.
+I implemented Stateless Clients in Parity, a popular Ethereum client written in the Rust programming language. The implementation was divided into several logical parts.
 
 \subsection{State backend}
 
 
-Ethereum state in Parity is accessed though a \texttt{State} struct. \texttt{State} handles the following tasks:
+Ethereum state in Parity is accessed through a \texttt{State} struct. \texttt{State} handles the following tasks:
 \begin{enumerate}
   \item Create recoverable checkpoints
   \item Create and retrieve smart contracts
@@ -209,7 +267,7 @@ Ethereum state in Parity is accessed though a \texttt{State} struct. \texttt{Sta
   \item Transfer balances between accounts
 \end{enumerate}
 
-In addition to these tasks, \texttt{State} also maintains an internal cache of the accounts that were requested. Modifications to these accounts are cached, and are written to the underlying storage only when the \texttt{State} object is destroyed.
+In addition to these tasks, \texttt{State} also maintains an internal cache of the accounts that were requested. Modifications to these accounts are cached and are written to the underlying storage only when the \texttt{State} object is destroyed.
 
 The \texttt{State} struct provides a convenient wrapper around the Ethereum state trie. Other parts of Parity, such as the Ethereum Virtual Machine, use the functions exposed by \texttt{State} to execute transactions. However, the Ethereum state data is not stored inside the \texttt{State} object. \texttt{State} is a generic struct that uses a state backend (a \texttt{Backend} object) to read and write state data.
 
@@ -234,7 +292,7 @@ The ``standard'' backend that Parity uses is the \texttt{StateDB} backend. \text
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{../figures/implementation/code_layout.pdf}
-  \caption{The relationships between structs in Parity. In unmodified Parity, \texttt{State} communicates with \texttt{StateDB} which uses an on-disk RocksDB key-value store. In the stateless clients implementation, miners have a different code path than verifiers. Miners use \texttt{WitnessCreate} to generate witnesses by intercepting \texttt{Get()} calls to \texttt{StateDB}. Witnesses are extracted from \texttt{WitnessCreate} with \texttt{extractWitnesses()}. Verifiers use \texttt{WitnessCheck} to check these witnesses and use them as a state store for executing transactions.}
+  \caption{The relationships between structs in Parity. In unmodified Parity, \texttt{State} communicates with \texttt{StateDB} which uses an on-disk RocksDB key-value store. In the Stateless Clients implementation, miners have a different code path than verifiers. Miners use \texttt{WitnessCreate} to generate witnesses by intercepting \texttt{Get()} calls to \texttt{StateDB}. Witnesses are extracted from \texttt{WitnessCreate} with \texttt{extractWitnesses()}. Verifiers use \texttt{WitnessCheck} to check these witnesses and use them as a state store for executing transactions.}
   \label{fig:parityrelationships}
 \end{figure}
 
@@ -262,7 +320,7 @@ Block verification in Ethereum is fairly simple. Blocks that are freshly mined a
 I modified the final step of the block verification process to use a \texttt{WitnessCheck} state backend instead of \texttt{StateDB}. When constructing the \texttt{WitnessCheck}, we use the witness that is broadcast with the block. The \texttt{WitnessCheck} backend implements the methods in Figure~\ref{fig:backendmethods} by using the witness. \texttt{Insert(value)} and \texttt{Emplace(key, value)} are implemented by using an in-memory \texttt{HashMap} to record all write operations to the \texttt{WitnessCheck} backend. \texttt{Get(key)} is implemented by looking for values in the witness that have a SHA-3 hash equal to the \texttt{key}. If no values exist, then the in-memory \texttt{HashMap} is checked. This handles the case when a new value is written and later read from during transaction execution. \texttt{Contains(key)} is implemented by using the same logic as \texttt{Get(key)}, and \texttt{Remove(key)} only removes values from the in-memory \texttt{HashMap} leaving the witness data untouched. There are no read or write operations to the RocksDB state database when verifying blocks.
 
 \subsection{Serialization of witnesses}
-A RLP serialized block has the following layout:
+An RLP serialized block has the following layout:
 \begin{enumerate}
   \item Header
   \begin{enumerate}
@@ -320,7 +378,7 @@ The block sync protocol in Ethereum also needed to be changed. Ethereum nodes us
 \end{figure}
 
 
-The block synchronization protocol flow in unmodified Ethereum is described in Figure~\ref{syncprotocol}. First, peers send a \textsc{Status} message to each other. The \textsc{Status} message notifies all participants the latest block number present in every node. Nodes that need more blocks can request blocks from the node with a greater latest block number. The key part of the sync protocol is that blocks are split in \emph{headers} and \emph{bodies} that are sent separately. First, block headers are requested and sent (step~\ref{syncprotocol:requestBlockHeaders}). Then, in step~\ref{syncprotocol:requestBlockBodies}, block bodies are requested for \emph{non-empty} blocks. Nodes are able to tell if blocks are empty by reading the block header. If a block is empty, then there is no need to request and send an empty body.
+The block synchronization protocol flow in unmodified Ethereum is described in Figure~\ref{syncprotocol}. First, peers send a \textsc{Status} message to each other. The \textsc{Status} message notifies all participants the latest block number present in every node. Nodes that need more blocks can request blocks from the node with a greater latest block number. The key part of the sync protocol is that blocks are split into \emph{headers} and \emph{bodies} that are sent separately. First, block headers are requested and sent (step~\ref{syncprotocol:requestBlockHeaders}). Then, in step~\ref{syncprotocol:requestBlockBodies}, block bodies are requested for \emph{non-empty} blocks. Nodes are able to tell if blocks are empty by reading the block header. If a block is empty, then there is no need to request and send an empty body.
 
 
 This protocol cannot be used for Stateless Clients without modifications. The reason is that no block in Stateless Clients is ``empty'', each block at least contains a witness for the block. Even if a block contains no transactions or uncle blocks, it still updates the Ethereum world state because the miner of the block gets rewarded. Rewarding the miner is done by increasing the balance in the miner's account, and the Ethereum node needs to have a Merkle proof of the balance of the miner's account.
@@ -336,13 +394,13 @@ The modifications that were made to this protocol are the following:
 
 \subsection{Correctness}
 
-I tested my implementation for stateless clients for correctness by sending blocks from one instance of Parity to another. The first instance of Parity downloaded blocks from the real Ethereum blockchain and calculated the witness for the block. It then sent the modified block to the second instance of Parity, which was running with the stateless client modifications.
+I tested my implementation for Stateless Clients for correctness by sending blocks from one instance of Parity to another. The first instance of Parity downloaded blocks from the real Ethereum blockchain and calculated the witness for the block. It then sent the modified block to the second instance of Parity, which was running with the stateless client modifications.
 
 The stateless client Parity instance executed each block using the provided witness for any operations involving the Ethereum state. The stateless client is only able to verify blocks with the witness correctly if the state root hash after executing the transactions within the block matches the state root hash calculated by an unmodified Parity instance. I was able to verify that all blocks in the Ethereum blockchain, up to block 7.3 million, are correctly verified by the stateless client.
 
 \subsection{Results} \label{subsection:results}
 
-I tested the stateless clients in a variety of experiments. The purpose of these experiments were to determine if stateless clients is a viable solution to the scalability problems in Ethereum. All experiments were run on a INSERT SYSTEM SPECIFICATIONS HERE.
+I tested the Stateless Clients in a variety of experiments. The purpose of these experiments was to determine if Stateless Clients is a viable solution to the scalability problems in Ethereum. All experiments were run on a INSERT SYSTEM SPECIFICATIONS HERE.
 
 \subsubsection{Witness Sizes}
 
@@ -355,7 +413,7 @@ The first experiment I ran measured witness sizes. I imported the first 7.3 mill
   \label{fig:witnesssize}
 \end{figure}
 
-Figure~\ref{fig:witnesssize} shows the average witness size per block. There is a lot of variability in witness sizes, so the graph shows a rolling average over the last 2000 blocks at each block number. The average witness size is 723 KB over all blocks. Witness size also generally increases with block number. This is because later blocks tend to contain more transactions than earlier blocks, so more state trie nodes are required for block execution. The size of the state trie also grows as more users create Ethereum accounts, further increasing the witness size. Finally, increasing popularity of smart contracts that can potentially touch many accounts in a single transaction also contributes to witness size.
+Figure~\ref{fig:witnesssize} shows the average witness size per block. There is a lot of variability in witness sizes, so the graph shows a rolling average over the last 2000 blocks at each block number. The average witness size is 723 KB over all blocks. Witness size also generally increases with block number. This is because later blocks tend to contain more transactions than earlier blocks, so more state trie nodes are required for block execution. The size of the state trie also grows as more users create Ethereum accounts, further increasing the witness size. Finally, the increasing frequency of smart contracts that can potentially touch many accounts in a single transaction also contributes to witness size.
 
 The largest witness size was 49.2 MB at block 2306350. The large spikes in the graph from blocks 2.3 to 2.7 million are from a DDoS attack on the Ethereum network in late 2016. This attack created millions of dead Ethereum accounts and significantly increased the size of the state trie. As a result, the witness sizes for blocks in this range are also very large, since they contain millions of newly created accounts.
 
@@ -376,26 +434,26 @@ One closely related statistic to witness size is the directory size of the Parit
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{../figures/results/graphs/background/on-disk-size.pdf}
-  \caption{On disk size of stateful client and unmodified client, per block number.}
+  \caption{on-disk size of stateful client and unmodified client, per block number.}
   \label{fig:ondisksize}
 \end{figure}
 
-The disk space required for running a stateful client grows much more quickly than for running an unmodified Parity client. Due to space constraints, stateful client disk usage was only able to be collected for the first 2.3 million blocks. However, using the data from Figures~\ref{fig:witnesssize}~and~\ref{fig:blocksize}, we are able to project what the on disk size would be if the experiment had continued.
+The disk space required for running a stateful client grows much more quickly than for running an unmodified Parity client. Due to space constraints, stateful client disk usage was only able to be collected for the first 2.3 million blocks. However, using the data from Figures~\ref{fig:witnesssize}~and~\ref{fig:blocksize}, we are able to project what the on-disk size would be if the experiment had continued.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{../figures/results/graphs/background/projected-on-disk-size.pdf}
-  \caption{Projected on disk size of stateful client and stateless client, compared to actual on disk size of unmodified client.}
+  \caption{Projected on-disk size of stateful client and stateless client, compared to actual on-disk size of unmodified client.}
   \label{fig:projectedondisksize}
 \end{figure}
 
-The projected data in Figure~\ref{fig:projectedondisksize} was obtained by using cumulative sums of block size and witness size. If this experiment had continued, then the actual disk usage would be slightly less than the proejcted usage. This is because RocksDB compresses blockchain data. However, even with the projected data it is apparent that the space required to store witnesses for each block makes the stateless clients proposal impractical. Currently a new Ethereum block is mined every 15 seconds. Using the projected rate of disk usage growth, 1.7 MB of data will have to be stored per new block, amounting to 9.8 GB of additional disk usage per day.
+The projected data in Figure~\ref{fig:projectedondisksize} was obtained by using cumulative sums of block size and witness size. If this experiment had continued, then the actual disk usage would be slightly less than the proejcted usage. This is because RocksDB compresses blockchain data. However, even with the projected data it is apparent that the space required to store witnesses for each block makes the Stateless Clients proposal impractical. Currently, a new Ethereum block is mined every 15 seconds. Using the projected rate of disk usage growth, 1.7 MB of data will have to be stored per new block, amounting to 9.8 GB of additional disk usage per day.
 
 \subsubsection{Verification Time}
 
 \subsubsection{Database Operations}
 
-One advantage of stateless clients is that the number of database operations is greatly reduced. Compare the amount of operations done in unmodified Ethereum INSERT FIGURE HERE (ALREADY HAVE DATA). The number of database operations for stateless clients is constant (IS THIS TRUE? NEED TO CHECK)
+One advantage of Stateless Clients is that the number of database operations is greatly reduced. Compare the amount of operations done in unmodified Ethereum INSERT FIGURE HERE (ALREADY HAVE DATA). The number of database operations for Stateless Clients is constant (IS THIS TRUE? NEED TO CHECK)
 
 \section{Related Work}
 
@@ -403,7 +461,7 @@ There are several other potential solutions to scaling blockchains.
 
 \subsection{Ethereum 2.0 Sharding}
 
-Stateless clients is part of a larger effort within the Ethereum community to develop \emph{Ethereum 2.0}. Ethereum 2.0 is a set of specifications for the next version of Ethereum. One of the ideas proposed in Ethereum 2.0 is to \emph{shard} the blockchain. Currently, all Ethereum nodes process all transactions. Once a block is mined, it is broadcast to the whole network and every Ethereum node verifies the block independently. The problem with this approach is that the throughput of the entire system is limited by the throughput of a single node.
+Stateless Clients is part of a larger effort within the Ethereum community to develop \emph{Ethereum 2.0}. Ethereum 2.0 is a set of specifications for the next version of Ethereum. One of the ideas proposed in Ethereum 2.0 is to \emph{shard} the blockchain. Currently, all Ethereum nodes process all transactions. Once a block is mined, it is broadcast to the whole network and every Ethereum node verifies the block independently. The problem with this approach is that the throughput of the entire system is limited by the throughput of a single node.
 
 Ethereum 2.0 Sharding proposes to split the blockchain and state trie into partitions called \emph{``shards''}. One sharding scheme is to create shards based on account addresses. For example, all account addresses starting with \texttt{0x0...} would be in one shard, all account addresses starting with \texttt{0x1...} would be in another shard, and so on until account addresses starting with \texttt{0xf...}. This scheme creates 16 shards, one for each hexadecimal digit from \texttt{0x0} to \texttt{0xf}. Within a shard, Ethereum transactions are the same as in the current version of Ethereum. Intra-shard transaction execution is not changed, but there is a complex protocol to handle inter-shard transactions. % TODO: explain this?
 
@@ -417,7 +475,7 @@ Ethereum 2.0 Sharding proposes to split the blockchain and state trie into parti
 
 \section{Future Work}
 
-One area that could be explored in the future is different techniques for reducing witness size. In Section~\ref{subsection:results}, I showed how the witness sizes make the stateless clients proposal impractical to use. However, using techniques such as witness revision and caching, it is possible that witness sizes could be reduced. RainBlock (Section~\ref{subsection:rainblock}) does this.
+One area that could be explored in the future is different techniques for reducing witness size. In Section~\ref{subsection:results}, I showed how the witness sizes make the Stateless Clients proposal impractical to use. However, using techniques such as witness revision and caching, it is possible that witness sizes could be reduced. RainBlock (Section~\ref{subsection:rainblock}) does this.
 
 
 \section{Conclusion}
