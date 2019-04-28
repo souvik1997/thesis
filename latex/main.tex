@@ -5,22 +5,14 @@
 \usepackage{flafter}
 \usepackage{enumitem}
 \usepackage{float}
-\usepackage{longtable}
 \usepackage{tabularx}
 \usepackage{xspace}
-\usepackage{multicol}
 \usepackage{amsmath,amsthm,amssymb, amsthm}
 \usepackage{enumitem}
 \usepackage{mathtools}
-\usepackage{listings}
 \usepackage{mathptmx}
-\setlist[itemize]{itemsep=0mm}
 \usepackage[font=small,labelfont=bf]{caption}
-\usepackage[capitalise]{cleveref}
-\usepackage{setspace}
-\usepackage{afterpage}
-\usepackage[authoryear,round,longnamesfirst]{natbib}
-\usepackage{bibentry}
+\usepackage{filecontents}
 
 \newcounter{protocol}
 \newenvironment{protocol}[1]
@@ -44,8 +36,130 @@
 \newcommand{\System}{Stateless Clients\xspace}
 \newcommand{\figurewidth}{0.8\textwidth}
 
-% \doublespacing
 
+\begin{filecontents}{\jobname.bib}
+@misc{yellowpaper,
+  author = {Gavin Wood},
+  title = {{Ethereum: A secure decentralised generalised transaction ledger. Byzantium version 78d7b9a.}},
+  journal = {Ethereum Project Yellow Paper},
+  year = {2019},
+  url = {https://ethereum.github.io/yellowpaper/paper.pdf},
+}
+
+@misc{bitcoin-whitepaper,
+  author = {{Satoshi Nakamoto}},
+  title = {{Bitcoin: A Peer-to-Peer Electronic Cash System}},
+  year = {2008},
+  url = {\url{https://bitcoin.org/bitcoin.pdf}}
+}
+@misc {bitcoin,
+  title = {Bitcoin},
+  howpublished = {\url{https://bitcoin.org/en/}},
+}
+
+@misc {ethereum,
+  title = {Ethereum},
+  howpublished = {\url{https://github.com/ethereum/}},
+}
+
+@misc{visa,
+  author = {Visa},
+  title = {{Visa acceptance for retailers}},
+  howpublished = {\url{https://usa.visa.com/run-your-business/small-business-tools/retail.html}},
+  year=2018
+}
+
+@misc{cryptokitties,
+  author = {Cryptokitties},
+  title = {{CryptoKitties | Collect and breed digital cats!}},
+  howpublished = {\url{https://www.cryptokitties.co/}},
+  year=2018
+}
+
+@misc{statelessclients,
+  author = {Vitalik Buterin},
+  title = {{The Stateless Client Concept}},
+  url = {\url{https://ethresear.ch/t/the-stateless-client-concept/172}},
+  year = {2017}
+}
+
+@misc{ethereumblocktime,
+  title = {Ethereum (ETH) price stats and information.},
+  author = {{BitInfoCharts}},
+  url = {\url{https://bitinfocharts.com/ethereum/}},
+  year = {2019},
+}
+
+@misc{etherchain-transaction,
+  title = {{Transaction details}},
+  author = {{Etherchain}},
+  url = {\url{https://www.etherchain.org/tx/29000544fb94145da4806b4506386a2b6775d4d4abca48fec1083d646e14cd2f}}
+}
+
+@inproceedings{merkle1987digital,
+  title={A digital signature based on a conventional encryption function},
+  author={Merkle, Ralph C},
+  booktitle={Conference on the theory and application of cryptographic techniques},
+  pages={369--378},
+  year={1987},
+  organization={Springer}
+}
+
+@misc{rlp,
+  title = {{RLP Encoding}},
+  howpublished = {\url{https://github.com/ethereum/wiki/wiki/RLP}},
+}
+
+@misc{merkle-patricia-trie,
+  title = {{RLP Encoding}},
+  howpublished = {\url{https://github.com/ethereum/wiki/wiki/Patricia-Tree}},
+}
+
+@misc {ethereum-stateless-analysis,
+  title = {{Detailed analysis of stateless client witness size, and gains from batching and multi-state roots}},
+  howpublished = {\url{https://ethresear.ch/t/detailed-analysis-of-stateless-client-witness-size-and-gains-from-batching-and-multi-state-roots/862}},
+}
+
+@misc {ethereum-sharding,
+  title = {{Sharding introduction R\&D compendium}},
+  howpublished = {\url{https://github.com/ethereum/wiki/wiki/Sharding-introduction-R&D-compendium}}
+}
+
+@misc {solidity,
+  title = {{Solidity}},
+  howpublished = {\url{https://github.com/ethereum/solidity}}
+}
+
+@misc {ethash,
+  title = {{Ethash}},
+  howpublished = {\url{https://github.com/ethereum/wiki/wiki/Ethash}}
+}
+
+@inproceedings{androulaki2018hyperledger,
+  title={{Hyperledger Fabric: A distributed operating system for permissioned blockchains}},
+  author={Androulaki, Elli and Barger, Artem and Bortnikov, Vita and Cachin, Christian and Christidis, Konstantinos and De Caro, Angelo and Enyeart, David and Ferris, Christopher and Laventman, Gennady and Manevich, Yacov and others},
+  booktitle={Proceedings of the Thirteenth EuroSys Conference},
+  pages={30},
+  year={2018},
+  organization={ACM}
+}
+
+@misc {parity,
+  title = {Parity Ethereum 2.2.11-stable},
+  howpublished = {\url{https://github.com/paritytech/parity-ethereum/releases/tag/v2.2.11}},
+}
+
+@misc {rlpx,
+  title = {{The RLPx Transport Protocol}},
+  howpublished = {\url{https://github.com/ethereum/devp2p/blob/master/rlpx.md}},
+}
+
+@misc{ethereum-wire-protocol,
+  title = {{Ethereum Wire Protocol (ETH)}},
+  howpublished = {\url{https://github.com/ethereum/devp2p/blob/master/caps/eth.md}}
+}
+
+\end{filecontents}
 
 \title{Implementing \System in Ethereum}
 \author{Souvik Banerjee}
@@ -80,23 +194,23 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 In the last few years, blockchain technology has become increasingly popular.
 Blockchain is a decentralized data sharing technology that works in a distributed environment consisting of multiple nodes. It can be defined as an immutable \emph{ledger} that records transactions. The blockchain structure consists of cryptographically signed \emph{blocks} that are linked to each other with cryptographic hashes. Each block contains \emph{transactions} that show value transfers between different accounts. Each node in the network maintains its own copy of the blockchain, which makes the ledger a \emph{distributed ledger}. The ledger is kept up to date using a distributed consensus mechanism, which allows nodes to validate transactions, package them into blocks, and update the block hash chain.
 
-Blockchain and cryptocurrency are two different concepts, but their development has been intertwined. Blockchain was first suggested by Satoshi Nakamoto's paper introducing Bitcoin in late 2008. Bitcoin is a cryptocurrency and is a specific implementation of blockchain technology.
+Blockchain and cryptocurrency are two different concepts, but their development has been intertwined. Blockchain was first suggested by Satoshi Nakamoto's paper introducing Bitcoin~\cite{bitcoin} in late 2008. Bitcoin is a cryptocurrency and is a specific implementation of blockchain technology.
 
-Ethereum is a cryptocurrency that builds upon the ideas introduced in Bitcoin. Ethereum is a transaction-based state machine that starts with some initial \emph{genesis} state, incrementally executes transactions, and arrives at a final state. These transactions are collected into blocks, and blocks are hashed to create a hash chain. The Ethereum protocol has a native currency called Ether and is abbreviated as ETH.
+Ethereum~\cite{ethereum} is a cryptocurrency that builds upon the ideas introduced in Bitcoin. Ethereum is a transaction-based state machine that starts with some initial \emph{genesis} state, incrementally executes transactions, and arrives at a final state. These transactions are collected into blocks, and blocks are hashed to create a hash chain. The Ethereum protocol has a native currency called Ether and is abbreviated as ETH.
 
 The goal of Ethereum is to create a platform for decentralized applications, and it does this by incorporating a built-in Turing complete programming language. This allows users to write \emph{smart contracts} that contain arbitrary code and run on the decentralized Ethereum network. In contrast to Bitcoin, where transactions are simply value transfers between accounts, Ethereum transactions can create and run smart contracts. The ability to run arbitrary code makes Ethereum an extremely powerful abstraction layer on which decentralized applications can be built.
 
-One problem with blockchain-based systems is that they are orders of magnitude slower than their centralized equivalent. Ethereum is only able to process about 15 transactions per second, while payment processors like Visa can process 24,000 transactions per second. New distributed applications that run on Ethereum such as CryptoKitties have slowed down transaction processing time even further. Improving the scalability of blockchain-based systems is crucial for widespread adoption.
+One problem with blockchain-based systems is that they are orders of magnitude slower than their centralized equivalent. Ethereum is only able to process about 15 transactions per second, while payment processors like Visa can process 24,000 transactions per second~\cite{visa}. New distributed applications that run on Ethereum such as CryptoKitties~\cite{cryptokitties} have slowed down transaction processing time even further. Improving the scalability of blockchain-based systems is crucial for widespread adoption.
 
-A proposed solution to Ethereum's scalability problems is called \emph{\System}. \System was proposed by Vitalik Buterin, the founder of Ethereum, in 2017. \System aims to improve scalability by reducing I/O when verifying blocks. However, until now there has been no working prototype of \System.
+A proposed solution to Ethereum's scalability problems is called \emph{\System}~\cite{statelessclients}. \System was proposed by Vitalik Buterin, the founder of Ethereum, in 2017. \System aims to improve scalability by reducing I/O when verifying blocks. However, until now there has been no working prototype of \System.
 
-The structure of this paper is as follows: first, I will review some foundational concepts in Ethereum. Second, I will describe in more detail how \System is designed and how I implemented \System in Parity. Third, I will show some of the results I obtained from my implementation.
+The structure of this paper is as follows: first, I will review some foundational concepts in Ethereum. Second, I will describe in more detail how \System is designed and how I implemented \System in Parity~\cite{parity}. Third, I will show some of the results I obtained from my implementation.
 
 \section{Background}
 
 \subsection{Ethereum Virtual Machine}
 
-Ethereum is a platform for deploying and running smart contracts. Smart contracts are programs that enforce a contract and run on the Ethereum Virtual Machine, or EVM. Smart contracts are created with the \emph{Solidity} programming language and compile to EVM opcodes. The Ethereum blockchain is replicated on many nodes and all nodes verify the correct execution of the smart contract. This makes smart contracts useful for self-executing agreements between two parties.
+Ethereum is a platform for deploying and running smart contracts~\cite{yellowpaper}. Smart contracts are programs that enforce a contract and run on the Ethereum Virtual Machine, or EVM. Smart contracts are created with the \emph{Solidity} programming language and compile to EVM opcodes~\cite{solidity}. The Ethereum blockchain is replicated on many nodes and all nodes verify the correct execution of the smart contract. This makes smart contracts useful for self-executing agreements between two parties.
 
 These EVM opcodes allow the EVM to be Turing complete, limited only by the following factors:
 \begin{enumerate}
@@ -105,7 +219,7 @@ These EVM opcodes allow the EVM to be Turing complete, limited only by the follo
   \item Memory: Memory is used for storing variables and calling functions. No hard limit exists on the amount of memory that may be used, but memory must be paid for with gas. The cost grows quadratically according to the following equation.
   % Equation 296 in the Yellow Paper
   \begin{align*}
-    C_{mem}(a) &\equiv G_{memory} \cdot a + \lfloor \frac{a^2}{512} \rfloor \\
+    C_{mem}(a) &\equiv G_{memory} \cdot a + \lfloor \frac{a^2}{512} \rfloor  & \text{(Equation 296 in~\cite{yellowpaper})}\\
   \end{align*}
   $G_{memory}$ is a constant defined to be $G_{memory} = 3$, and $a$ is the amount of $256$-bit words used.
   \item Storage: Contracts may also store and read data in permanent storage. The \texttt{SSTORE} opcode stores a value to contract storage. This opcode costs 5,000 gas when writing to an existing value and 20,000 gas when writing to a new value. There is no hard limit on contract storage, but it is stored on each Ethereum node and is limited by hard drive capacity. Therefore, to discourage overuse of contract storage, the gas price is very high.
@@ -122,7 +236,7 @@ Each account in Ethereum is identified by a 160-bit address, and accounts can ei
 \begin{figure}[H]
   \centering
   \includegraphics[width=\figurewidth]{../figures/background/transactions/example_transaction.png}
-  \caption{An example transaction, with sender and receiver addresses. Transactions are uniquely identified by their hash. This is the SHA-3 hash of the serialized transaction (Section~\ref{subsection:rlp}).}
+  \caption{An example transaction, with sender and receiver addresses~\cite{etherchain-transaction}. Transactions are uniquely identified by their hash. This is the SHA-3 hash of the serialized transaction (Section~\ref{subsection:rlp}).}
 \end{figure}
 
 \emph{Blocks} in Ethereum are collections of transactions. Blocks contain transactions and a \emph{header}, which contains metadata about the block. One field in the header is the \emph{parent block hash}. Blocks ``build'' on top of previous blocks by including the SHA-3 hash of the previous block in the block header. This forms a ``hash chain'' of blocks. The hash chain makes it impossible to modify previous blocks. Modifying a previous block would change the hash of the modified block and all blocks afterward.
@@ -136,11 +250,11 @@ Each account in Ethereum is identified by a 160-bit address, and accounts can ei
 
 \subsection{Recursive-Length-Prefix (RLP) Encoding} \label{subsection:rlp}
 
-Ethereum has a native serialization encoding called Recursive Length Prefix (RLP). RLP encodes arbitrarily nested lists of binary data. It is similar to other encoding schemes like JSON, but the range of types that are supported are limited to only lists and binary data. RLP is used to serialize blocks, transactions, and other data structures used in Ethereum.
+Ethereum has a native serialization encoding called Recursive Length Prefix (RLP)~\cite{rlp}. RLP encodes arbitrarily nested lists of binary data. It is similar to other encoding schemes like JSON, but the range of types that are supported are limited to only lists and binary data. RLP is used to serialize blocks, transactions, and other data structures used in Ethereum.
 
 \subsection{Merkle-Patricia Trie} \label{subsection:merklepatriciatrie}
 
-Ethereum stores account balances and other account metadata in a data structure called a \emph{Merkle-Patricia trie}. A Merkle-Patricia trie builds upon both radix tries and Merkle trees. Each node in the trie is hashed by first serializing with RLP, then using the SHA-3 hash function. This builds a key-value map of node hashes to nodes.
+Ethereum stores account balances and other account metadata in a data structure called a \emph{Merkle-Patricia trie}~\cite{merkle-patricia-trie}. A Merkle-Patricia trie builds upon both radix tries and Merkle trees~\cite{merkle1987digital}. Each node in the trie is hashed by first serializing with RLP, then using the SHA-3 hash function. This builds a key-value map of node hashes to nodes.
 
 \begin{figure}[H]
   \centering
@@ -166,10 +280,12 @@ Ethereum is a transaction-based state machine, since applying a transaction to a
  % TODO: should I go into more detail? it is pretty complicated and would take a few paragraphs to describe fully
 
 \subsection{Consensus} \label{subsection:consensus}
-Ethereum supports multiple consensus protocols, but the protocol that is most popular is \emph{Proof-Of-Work} (PoW). Proof-Of-Work deters abuse by requiring that nodes perform computationally intensive tasks. This consensus protocol requires that nodes send proofs that the computationally intensive work has been done. These proofs are easy to verify, but are difficult to create.
+Ethereum supports multiple consensus protocols, but the protocol that is most popular is \emph{Proof-Of-Work} (PoW)~\cite{bitcoin-whitepaper}. Proof-Of-Work deters abuse by requiring that nodes perform computationally intensive tasks. This consensus protocol requires that nodes send proofs that the computationally intensive work has been done. These proofs are easy to verify, but are difficult to create.
 
 In PoW, blocks must be \emph{mined} before they are added to the hash chain. Nodes which mine blocks are called \emph{miners}. Any node in Ethereum may choose to be a miner.
-Miners mine blocks by choosing values for the \emph{nonce}, a field in a block's header. A block is successfully mined if the block's hash satisfies a certain condition. By modifying the nonce field in the block header, serializing the block header with RLP, and finding the SHA-3 hash of the serialized header, we obtain the block hash. Once a nonce that satisfies the PoW condition has been found, the miner advertises the mined block on the network. Other nodes on the network check that the block has been mined correctly by hashing the block header and checking if it satisfies the PoW condition.
+Miners mine blocks by choosing values for the \emph{nonce}, a field in a block's header. A block is successfully mined if the block's hash satisfies a certain condition. By modifying the nonce field in the block header, serializing the block header with RLP, and finding the SHA-3 hash of the serialized header, we obtain the block hash. Once a nonce that satisfies the PoW condition has been found, the miner advertises the mined block on the network. Other nodes on the network verify that the block has been mined correctly by hashing the block header and checking if it satisfies the PoW condition.
+
+Ethereum mining uses the \emph{Ethash} algorithm~\cite{ethash}. This algorithm is designed to be difficult to run on application-specific integrated circuits (ASICs) by using a significant amount of memory. Ethash uses a resource that is several gigabytes large and is regenerated every \emph{epoch transition}, which happens every 30000 blocks. This shared resource is called a DAG (directed acyclic graph) and is only needed to create the Proof-Of-Work. The DAG is not required for Proof-Of-Work verification.
 
 Miners in Ethereum are rewarded by a predetermined block reward and by the transaction fees from the transactions they include in the block. Reward distribution is done by including the account address of the miner in the block's header. This is called the block's \emph{coinbase}. Miners also do not coordinate mining blocks and race against each other to mine the next block in the block chain. Since there is no coordination, it is possible for more than one block to be generated simultaneously. If this happens, then one block will be chosen to be added onto the main block chain, and the other blocks become \emph{uncle blocks}. Miners are still rewarded for producing uncle blocks, but the reward is not as high as for producing a normal block.
 
@@ -392,7 +508,7 @@ I added an additional field in the \emph{Body} section of the serialized block t
 
 \subsection{Block sync protocol}
 
-The block sync protocol in Ethereum also needed to be changed. Ethereum nodes use a peer-to-peer (P2P) transport protocol called RLPx to communicate between nodes. The Ethereum Wire Protocol runs on top of RLPx and is used to synchronize the following data among nodes:
+The block sync protocol in Ethereum also needed to be changed. Ethereum nodes use a peer-to-peer (P2P) transport protocol called RLPx~\cite{rlpx} to communicate between nodes. The Ethereum Wire Protocol~\cite{ethereum-wire-protocol} runs on top of RLPx and is used to synchronize the following data among nodes:
 \begin{enumerate}
   \item Transactions: When a node receives a transaction, it also broadcasts the same transaction to its peers.
   \item Blocks: When a node mines a new block or receives a new block from a peer, it broadcasts the same block to its peers.
@@ -496,13 +612,19 @@ The disk space required for running a stateful client grows much more quickly th
   \label{fig:projectedondisksize}
 \end{figure}
 
-The projected data in Figure~\ref{fig:projectedondisksize} was obtained by using cumulative sums of block size and witness size, since the stateful client needs to store the block with its witness locally. If this experiment had continued, then the actual disk usage would be slightly less than the projected usage. This is because RocksDB compresses blockchain data. However, even with the projected data, it is clear that the space required to store witnesses for each block makes the \System proposal impractical. Currently, a new Ethereum block is mined every 15 seconds. Using the projected rate of disk usage growth, 1.7 MB of data will have to be stored per new block, amounting to 9.8 GB of additional disk usage per day.
+The projected data in Figure~\ref{fig:projectedondisksize} was obtained by using cumulative sums of block size and witness size, since the stateful client needs to store the block with its witness locally. If this experiment had continued, then the actual disk usage would be slightly less than the projected usage. This is because RocksDB compresses blockchain data. However, even with the projected data, it is clear that the space required to store witnesses for each block makes the \System proposal impractical. Currently, a new Ethereum block is mined every 15 seconds~\cite{ethereumblocktime}. Using the projected rate of disk usage growth, 1.7 MB of data will have to be stored per new block, amounting to 9.8 GB of additional disk usage per day.
 
 \subsubsection{Database Operations}
 
-\iffalse
-One advantage of \System is that the number of database operations is greatly reduced. Compare the amount of operations done in unmodified Ethereum INSERT FIGURE HERE (ALREADY HAVE DATA). The number of database operations for \System is constant (IS THIS TRUE? NEED TO CHECK)
-\fi
+One advantage of \System is that the number of database operations is greatly reduced. The only database operations that need to be performed when verifying a block are the following:
+\begin{enumerate}
+  \item One \textsc{Get} operation to check if the block has already been verified.
+  \item One \textsc{Get} operation to check the epoch transition (Section~\ref{subsection:consensus}).
+  \item One \textsc{Get} operation to verify each uncle block.
+  \item One \textsc{Put} operation to store the new block data.
+\end{enumerate}
+
+This is a significant reduction in I/O over the unmodified Parity client, which is shown in Figure~\ref{fig:blockverification} (repeated in )
 
 \subsubsection{Verification Time}
 
@@ -524,29 +646,47 @@ There are several other potential solutions to scaling blockchains.
 
 \subsection{Ethereum 2.0 Sharding}
 
-\iffalse
 
-\System is part of a larger effort within the Ethereum community to develop \emph{Ethereum 2.0}. Ethereum 2.0 is a set of specifications for the next version of Ethereum. One of the ideas proposed in Ethereum 2.0 is to \emph{shard} the blockchain. Currently, all Ethereum nodes process all transactions. Once a block is mined, it is broadcast to the whole network and every Ethereum node verifies the block independently. The problem with this approach is that the throughput of the entire system is limited by the throughput of a single node.
+\System is part of a larger effort within the Ethereum community to develop \emph{Ethereum 2.0}. Ethereum 2.0 is a set of specifications for the next version of Ethereum. One of the ideas proposed in Ethereum 2.0 is to \emph{shard} the blockchain~\cite{ethereum-sharding}. Currently, all Ethereum nodes process all transactions. Once a block is mined, it is broadcast to the whole network and every Ethereum node verifies the block independently. The problem with this approach is that the throughput of the entire system is limited by the throughput of a single node.
 
-Ethereum 2.0 Sharding proposes to split the blockchain and state trie into partitions called \emph{``shards''}. One sharding scheme is to create shards based on account addresses. For example, all account addresses starting with \texttt{0x0...} would be in one shard, all account addresses starting with \texttt{0x1...} would be in another shard, and so on until account addresses starting with \texttt{0xf...}. This scheme creates 16 shards, one for each hexadecimal digit from \texttt{0x0} to \texttt{0xf}. Within a shard, Ethereum transactions are the same as in the current version of Ethereum. Intra-shard transaction execution is not changed, but there is a complex protocol to handle inter-shard transactions. % TODO: explain this?
-\fi
+Ethereum 2.0 Sharding proposes to split the blockchain and state trie into partitions called \emph{``shards''}. One sharding scheme is to create shards based on account addresses. For example, all account addresses starting with \texttt{0x0...} would be in one shard, all account addresses starting with \texttt{0x1...} would be in another shard, and so on until account addresses starting with \texttt{0xf...}. This scheme creates 16 shards, one for each hexadecimal digit from \texttt{0x0} to \texttt{0xf}. Within a shard, Ethereum transactions are the same as in the current version of Ethereum. Intra-shard transaction execution is not changed, but there is a complex protocol to handle inter-shard transactions.
 
 
-\subsection{RainBlock} \label{subsection:rainblock}
+\subsection{Hyperledger Fabric}
 
+Hyperledger Fabric~\cite{androulaki2018hyperledger} is a blockchain architecture that improves scalability in the \emph{permissioned} setting. In contrast to \emph{permissionless} blockchains like Ethereum, peers in permissioned blockchains are not completely untrusted. Hyperledger Fabric improves the performance of permissioned blockchains by using an \emph{execute-order-validate} architecture. The transaction flow is split into three steps:
+\begin{enumerate}
+  \item \emph{Endorsing:} Executing transactions and checking its correctness.
+  \item \emph{Ordering:} Use a consensus protocol to order transactions and batch them into blocks.
+  \item \emph{Validation:} Validate transactions in blocks.
+\end{enumerate}
+
+There are three components to this architecture: \emph{clients}, \emph{peers}, and \emph{orderers}. In the endorsing step, clients send transactions to peers that execute them and reply back with the execution results. Then, clients send the transactions along with the execution results to the orderers, which use a consensus protocol to order the transactions and package them into blocks. Finally, peers receive these blocks and validate them.
+
+This is similar to \System in that clients do not have access to the blockchain state. Clients submit transactions to peers for execution. This works because in the permissioned setting, the peers are not completely untrusted.
 
 \section{Future Work}
 
-One area that could be explored in the future is different techniques for reducing witness size. In Section~\ref{subsection:results}, I showed how the witness sizes make the \System proposal impractical to use. Using techniques such as witness compaction, described in Section~\ref{subsection:dsmtrees}, would reduce the size of witnesses.
-
-Once witness sizes are reduced, the next logical step would be to implement Ethereum 2.0 sharding to further increase the overall throughput of Ethereum.
+TODO.
+\iffalse
+One area that could be explored in the future is different techniques for reducing witness size. In Section~\ref{subsection:results}, I showed how the witness sizes make the \System proposal impractical to use.
+\fi
 
 
 
 \section{Conclusion}
 
+TODO.
+
+\iffalse
+
 In this project, I worked on implementing the \System proposal in Parity, a popular Ethereum client. The goal of \System is to improve the scalability of Ethereum by reducing I/O operations required to verify blocks. \System does this by bundling a \emph{witness} along with each block, where the witness contains \emph{Merkle proofs} of all the values accessed in the Ethereum state trie during execution of the block. Miners generate witnesses when creating blocks by keeping track of the values accessed during block execution. Verifiers check witnesses for validity and reconstruct Merkle trees in order to verify blocks.
 
 \System does accomplish the goal of reducing I/O operations needed to verify blocks, but the extremely large witness overhead in each block makes using \System impractical. The witness size can be over $40\times$ the size of the block without witnesses, which makes sending blocks with witnesses over the network much more expensive.
+
+\fi
+
+\bibliography{\jobname}
+\bibliographystyle{plain}
 
 \end{document}
