@@ -34,7 +34,15 @@
 
 \newcommand{\system}{stateless clients\xspace}
 \newcommand{\System}{Stateless Clients\xspace}
-\newcommand{\figurewidth}{0.8\textwidth}
+\newcommand{\figurewidth}{0.85\textwidth}
+
+\newcommand{\repeatcaption}[2]{%
+  \renewcommand{\thefigure}{\ref{#1}}%
+  \captionsetup{list=no}%
+  \caption{#2 (repeated from page \pageref{#1})}%
+}
+
+\setlength{\parskip}{1em}
 
 
 \begin{filecontents}{\jobname.bib}
@@ -43,23 +51,24 @@
   title = {{Ethereum: A secure decentralised generalised transaction ledger. Byzantium version 78d7b9a.}},
   journal = {Ethereum Project Yellow Paper},
   year = {2019},
-  url = {https://ethereum.github.io/yellowpaper/paper.pdf},
+  howpublished = {\url{https://ethereum.github.io/yellowpaper/paper.pdf}}
 }
 
 @misc{bitcoin-whitepaper,
   author = {{Satoshi Nakamoto}},
   title = {{Bitcoin: A Peer-to-Peer Electronic Cash System}},
   year = {2008},
-  url = {\url{https://bitcoin.org/bitcoin.pdf}}
+  howpublished = {\url{https://bitcoin.org/bitcoin.pdf}}
 }
+
 @misc {bitcoin,
   title = {Bitcoin},
-  howpublished = {\url{https://bitcoin.org/en/}},
+  howpublished = {\url{https://bitcoin.org/en/}}
 }
 
 @misc {ethereum,
   title = {Ethereum},
-  howpublished = {\url{https://github.com/ethereum/}},
+  howpublished = {\url{https://github.com/ethereum/}}
 }
 
 @misc{visa,
@@ -79,21 +88,21 @@
 @misc{statelessclients,
   author = {Vitalik Buterin},
   title = {{The Stateless Client Concept}},
-  url = {\url{https://ethresear.ch/t/the-stateless-client-concept/172}},
+  howpublished = {\url{https://ethresear.ch/t/the-stateless-client-concept/172}},
   year = {2017}
 }
 
 @misc{ethereumblocktime,
   title = {Ethereum (ETH) price stats and information.},
   author = {{BitInfoCharts}},
-  url = {\url{https://bitinfocharts.com/ethereum/}},
-  year = {2019},
+  howpublished = {\url{https://bitinfocharts.com/ethereum/}},
+  year = {2019}
 }
 
 @misc{etherchain-transaction,
   title = {{Transaction details}},
   author = {{Etherchain}},
-  url = {\url{https://www.etherchain.org/tx/29000544fb94145da4806b4506386a2b6775d4d4abca48fec1083d646e14cd2f}}
+  howpublished = {\url{https://www.etherchain.org/tx/29000544fb94145da4806b4506386a2b6775d4d4abca48fec1083d646e14cd2f}}
 }
 
 @inproceedings{merkle1987digital,
@@ -107,17 +116,17 @@
 
 @misc{rlp,
   title = {{RLP Encoding}},
-  howpublished = {\url{https://github.com/ethereum/wiki/wiki/RLP}},
+  howpublished = {\url{https://github.com/ethereum/wiki/wiki/RLP}}
 }
 
 @misc{merkle-patricia-trie,
   title = {{RLP Encoding}},
-  howpublished = {\url{https://github.com/ethereum/wiki/wiki/Patricia-Tree}},
+  howpublished = {\url{https://github.com/ethereum/wiki/wiki/Patricia-Tree}}
 }
 
 @misc {ethereum-stateless-analysis,
   title = {{Detailed analysis of stateless client witness size, and gains from batching and multi-state roots}},
-  howpublished = {\url{https://ethresear.ch/t/detailed-analysis-of-stateless-client-witness-size-and-gains-from-batching-and-multi-state-roots/862}},
+  howpublished = {\url{https://ethresear.ch/t/detailed-analysis-of-stateless-client-witness-size-and-gains-from-batching-and-multi-state-roots/862}}
 }
 
 @misc {ethereum-sharding,
@@ -146,17 +155,22 @@
 
 @misc {parity,
   title = {Parity Ethereum 2.2.11-stable},
-  howpublished = {\url{https://github.com/paritytech/parity-ethereum/releases/tag/v2.2.11}},
+  howpublished = {\url{https://github.com/paritytech/parity-ethereum/releases/tag/v2.2.11}}
 }
 
 @misc {rlpx,
   title = {{The RLPx Transport Protocol}},
-  howpublished = {\url{https://github.com/ethereum/devp2p/blob/master/rlpx.md}},
+  howpublished = {\url{https://github.com/ethereum/devp2p/blob/master/rlpx.md}}
 }
 
 @misc{ethereum-wire-protocol,
   title = {{Ethereum Wire Protocol (ETH)}},
   howpublished = {\url{https://github.com/ethereum/devp2p/blob/master/caps/eth.md}}
+}
+
+@misc{ethereum-cross-shard,
+  title = {{Ethereum Sharding FAQ}},
+  howpublished = {\url{https://github.com/ethereum/wiki/wiki/Sharding-FAQ#how-can-we-facilitate-cross-shard-communication}}
 }
 
 \end{filecontents}
@@ -173,21 +187,23 @@
 \begin{center}
   \textsc{\textbf{Abstract}}
 \end{center}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. %abstract
+
+Ethereum is a blockchain based cryptocurrency and platform for decentralized applications and suffers from scalability problems. One reason for these scalability problems is due to I/O. A proposal to improve the scalability of Ethereum is \emph{\System}. \System reduces the amount of I/O Ethereum nodes need to perform by packaging Merkle proofs of state values accessed during transaction execution. These Merkle proofs are sent along with transactions in blocks from miners to other Ethereum nodes. These Merkle proofs are called witnesses, and Ethereum nodes use these witnesses to verify transactions without needing access to the Ethereum state. I discuss \System in detail, show how I implemented \System in the Parity Ethereum client, and show that \System is not practical.
 
 \par\bigskip\noindent\vspace{3in}
 \begin{center}
-  Advisor: Vijay Chidambaram
+  Advisor: Vijay Chidambaram \\
+  Second Reader: Chris Rossbach \\
+  Third Reader: Alan K. Cline \\
 \end{center}
 
 \newpage
 \thispagestyle{empty}
 \tableofcontents
-
 \newpage
 
 
-\section{Introduction}
+\section{Introduction} \label{section:introduction}
 
 % reword first two sentences
 
@@ -299,7 +315,7 @@ Miners in Ethereum are rewarded by a predetermined block reward and by the trans
 
 % Use RainBlock motivation/background for inspiration
 
-Unmodified Ethereum suffers from scalability problems. The amount of I/O nodes need to perform is significant and slows down transaction processing. Disk I/O has also been a source of denial-of-service (DoS) attacks in Ethereum. Most of these I/O operations come from traversing and updating the Merkle-Patricia trie storing the Ethereum world state. Making matters worse, the way Merkle-Patricia tries are stored on disk causes pointer-chasing random disk reads. Merkle-Patricia tries are typically stored in key-value stores such as LevelDB or RocksDB, where each value is stored using the SHA-3 hash of the value as the key. This randomizes the location of state trie nodes on disk.
+Ethereum currently suffers from scalability problems. As stated in section~\ref{section:introduction}, Ethereum can only support about 15 transactions per second which is too slow for widespread adoption. One reason for the lack of scalability is I/O. The amount of I/O nodes need to perform is significant and slows down transaction processing. Disk I/O has also been a source of denial-of-service (DoS) attacks in Ethereum~\cite{statelessclients}. Most of these I/O operations come from traversing and updating the Merkle-Patricia trie storing the Ethereum world state. Making matters worse, the way Merkle-Patricia tries are stored on disk causes pointer-chasing random disk reads. Merkle-Patricia tries are typically stored in key-value stores such as LevelDB or RocksDB, where each value is stored using the SHA-3 hash of the value as the key. This randomizes the location of state trie nodes on disk.
 
 \begin{figure}[H]
   \centering
@@ -395,7 +411,7 @@ After the nonce is obtained, the block is broadcast to other Ethereum nodes. The
   \item Execute transaction and apply block reward using the reconstructed Merkle-Patricia trie.
 \end{enumerate}
 
-Stateless client block verification starts by first receiving a block with witnesses from a miner (Figure~\ref{fig:example:block}). The verifier then reconstructs the Merkle-Patricia state trie using the witnesses in the block. It deserializes the nodes and inserts them into a \texttt{HashMap}, where the key for each node is the SHA-3 hash of the node. Recall from Section~\ref{subsection:merklepatriciatrie} that nodes in a Merkle-Patricia trie link to other nodes using their SHA-3 hash. \texttt{HashMap}s make looking up nodes by their hash efficient. Hashing each node also implicitly verifies the witness, since a malformed witness would have incorrect hashes and the trie would not be able to be reconstructed completely.
+Block verification in \System starts by first receiving a block with witnesses from a miner (Figure~\ref{fig:example:block}). The verifier then reconstructs the Merkle-Patricia state trie using the witnesses in the block. It deserializes the nodes and inserts them into a \texttt{HashMap}, where the key for each node is the SHA-3 hash of the node. Recall from Section~\ref{subsection:merklepatriciatrie} that nodes in a Merkle-Patricia trie link to other nodes using their SHA-3 hash. \texttt{HashMap}s make looking up nodes by their hash efficient. Hashing each node also implicitly verifies the witness, since a malformed witness would have incorrect hashes and the trie would not be able to be reconstructed completely.
 
 To determine which node is the root of the trie, the verifier uses the \emph{parent block hash} to look up the block header of the previous block. The previous block's header contains a \emph{state root} field, which is the state root for the current block. The reconstructed trie is shown in Figure~\ref{fig:example:reconstructed}.
 
@@ -618,17 +634,24 @@ The projected data in Figure~\ref{fig:projectedondisksize} was obtained by using
 
 One advantage of \System is that the number of database operations is greatly reduced. The only database operations that need to be performed when verifying a block are the following:
 \begin{enumerate}
-  \item One \textsc{Get} operation to check if the block has already been verified.
-  \item One \textsc{Get} operation to check the epoch transition (Section~\ref{subsection:consensus}).
-  \item One \textsc{Get} operation to verify each uncle block.
-  \item One \textsc{Put} operation to store the new block data.
+  \item One \textsc{Read} operation to check if the block has already been verified.
+  \item One \textsc{Read} operation to check the epoch transition (Section~\ref{subsection:consensus}). This operation is not strictly necessary, and with further optimization this may be removed.
+  \item One \textsc{Read} operation to verify each uncle block.
+  \item One \textsc{Write} operation to store the new block data.
 \end{enumerate}
 
-This is a significant reduction in I/O over the unmodified Parity client, which is shown in Figure~\ref{fig:blockverification} (repeated in )
+This is a significant reduction in I/O over the unmodified Parity client, which is shown in Figure~\ref{fig:blockverification}.
 
-\subsubsection{Verification Time}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\figurewidth]{../figures/results/graphs/background/db-io-ops.pdf}
+  \repeatcaption{fig:blockverification}{I/O operations performed during block verification}
+\end{figure}
 
-\System reduces I/O by bundling witnesses into blocks, but this does not necessarily translate to faster block verification times. I tested this by importing the first 2.3 million blocks along with witnesses into an unmodified Parity instance, and Parity with the stateless clients modification. The rate at which blocks were imported is shown in Figure~\ref{fig:throughput}.
+
+\subsubsection{Verification Time} \label{subsubsection:verificationtime}
+
+\System reduces I/O by bundling witnesses into blocks, but this does not necessarily translate to faster block verification times. I tested this by importing the first 2.3 million blocks along with witnesses into an unmodified Parity instance, and Parity with the \system modification. The rate at which blocks were imported is shown in Figure~\ref{fig:throughput}.
 
 \begin{figure}[H]
   \centering
@@ -637,19 +660,19 @@ This is a significant reduction in I/O over the unmodified Parity client, which 
   \label{fig:throughput}
 \end{figure}
 
-Although \System reduces I/O, the rate at which blocks can be verified is not greatly increased. Parity with \System modifications is only about 10\% faster than unmodified Parity in this benchmark. Using profiling data, I found that a large portion of the execution time spent in the stateless client is inside the SHA-3 hash function. Reconstructing the Merkle-Patricia trie from the block witness is somewhat expensive due to the large number of SHA-3 hash calculations required. To make this faster, one solution would be to encode the SHA-3 hash of each node in each Merkle proof in the witness along with the node data. However, this would further increase witness size.
+Although \System reduces I/O, the rate at which blocks can be verified is not greatly increased. Parity with \System modifications is only about 10\% faster than unmodified Parity in this benchmark. Using profiling data, I found that a large portion of the execution time spent in the stateless client is inside the SHA-3 hash function. Reconstructing the Merkle-Patricia trie from the block witness is expensive due to the large number of SHA-3 hash calculations required. To make this faster, one solution would be to encode the SHA-3 hash of each node in each Merkle proof in the witness along with the node data. However, this would further increase witness size.
 
 
 \section{Related Work}
 
 There are several other potential solutions to scaling blockchains.
 
-\subsection{Ethereum 2.0 Sharding}
+\subsection{Ethereum 2.0 Sharding} \label{subsection:ethereumsharding}
 
 
 \System is part of a larger effort within the Ethereum community to develop \emph{Ethereum 2.0}. Ethereum 2.0 is a set of specifications for the next version of Ethereum. One of the ideas proposed in Ethereum 2.0 is to \emph{shard} the blockchain~\cite{ethereum-sharding}. Currently, all Ethereum nodes process all transactions. Once a block is mined, it is broadcast to the whole network and every Ethereum node verifies the block independently. The problem with this approach is that the throughput of the entire system is limited by the throughput of a single node.
 
-Ethereum 2.0 Sharding proposes to split the blockchain and state trie into partitions called \emph{``shards''}. One sharding scheme is to create shards based on account addresses. For example, all account addresses starting with \texttt{0x0...} would be in one shard, all account addresses starting with \texttt{0x1...} would be in another shard, and so on until account addresses starting with \texttt{0xf...}. This scheme creates 16 shards, one for each hexadecimal digit from \texttt{0x0} to \texttt{0xf}. Within a shard, Ethereum transactions are the same as in the current version of Ethereum. Intra-shard transaction execution is not changed, but there is a complex protocol to handle inter-shard transactions.
+Ethereum 2.0 Sharding proposes to split the blockchain and state trie into partitions called \emph{``shards''}. One sharding scheme is to create shards based on account addresses. For example, all account addresses starting with \texttt{0x0...} would be in one shard, all account addresses starting with \texttt{0x1...} would be in another shard, and so on until account addresses starting with \texttt{0xf...}. This scheme creates 16 shards, one for each hexadecimal digit from \texttt{0x0} to \texttt{0xf}. Within a shard, Ethereum transactions are the same as in the current version of Ethereum. However, transactions that access accounts in different shards need to use a complex protocol involving transaction receipts~\cite{ethereum-cross-shard}.
 
 
 \subsection{Hyperledger Fabric}
@@ -667,24 +690,19 @@ This is similar to \System in that clients do not have access to the blockchain 
 
 \section{Future Work}
 
-TODO.
-\iffalse
-One area that could be explored in the future is different techniques for reducing witness size. In Section~\ref{subsection:results}, I showed how the witness sizes make the \System proposal impractical to use.
-\fi
+One area that could be explored in the future is different techniques for reducing witness size. In Section~\ref{subsection:results}, I showed how the witness sizes make the \System proposal impractical to use. Reducing witness sizes would not only make \System feasible in terms of network and disk space constraints, but it would also increase block verification throughput (Section~\ref{subsubsection:verificationtime}) due to fewer Merkle-Patricia nodes to read from the witness section of the block data.
 
+There are several techniques for reducing witness size~\cite{ethereum-stateless-analysis} that could be implemented. One technique is to ``cache'' frequently used Merkle-Patricia trie nodes in verifier nodes. Nodes in the first few rows of the Merkle-Patricia trie are referenced often and can be stored locally at the verifier nodes. Then, witnesses no longer need to include full Merkle proofs of state values; they would only need to include Merkle-Patricia trie nodes that are not cached at the verifiers.
+
+Another area that could be explored is implementing Ethereum 2.0 Sharding (Section~\ref{subsection:ethereumsharding}) and determining whether it increases block verification throughput.
 
 
 \section{Conclusion}
 
-TODO.
-
-\iffalse
-
 In this project, I worked on implementing the \System proposal in Parity, a popular Ethereum client. The goal of \System is to improve the scalability of Ethereum by reducing I/O operations required to verify blocks. \System does this by bundling a \emph{witness} along with each block, where the witness contains \emph{Merkle proofs} of all the values accessed in the Ethereum state trie during execution of the block. Miners generate witnesses when creating blocks by keeping track of the values accessed during block execution. Verifiers check witnesses for validity and reconstruct Merkle trees in order to verify blocks.
 
-\System does accomplish the goal of reducing I/O operations needed to verify blocks, but the extremely large witness overhead in each block makes using \System impractical. The witness size can be over $40\times$ the size of the block without witnesses, which makes sending blocks with witnesses over the network much more expensive.
+\System does accomplish the goal of reducing I/O operations needed to verify blocks, but the extremely large witness overhead in each block makes using \System impractical. The witness size can be $40-100\times$ the size of the block without witnesses, which makes sending blocks with witnesses over the network much more expensive.
 
-\fi
 
 \bibliography{\jobname}
 \bibliographystyle{plain}
