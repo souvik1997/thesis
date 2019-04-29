@@ -34,7 +34,7 @@
 
 \newcommand{\system}{stateless clients\xspace}
 \newcommand{\System}{Stateless Clients\xspace}
-\newcommand{\figurewidth}{0.85\textwidth}
+\newcommand{\figurewidth}{0.8\textwidth}
 
 \newcommand{\repeatcaption}[2]{%
   \renewcommand{\thefigure}{\ref{#1}}%
@@ -126,7 +126,9 @@
 
 @misc {ethereum-stateless-analysis,
   title = {{Detailed analysis of stateless client witness size, and gains from batching and multi-state roots}},
-  howpublished = {\url{https://ethresear.ch/t/detailed-analysis-of-stateless-client-witness-size-and-gains-from-batching-and-multi-state-roots/862}}
+  author = {{Vitalik Buterin}},
+  howpublished = {\url{https://ethresear.ch/t/862}},
+  year = {2018}
 }
 
 @misc {ethereum-sharding,
@@ -188,7 +190,7 @@
   \textsc{\textbf{Abstract}}
 \end{center}
 
-Ethereum is a blockchain based cryptocurrency and platform for decentralized applications and suffers from scalability problems. One reason for these scalability problems is due to I/O. A proposal to improve the scalability of Ethereum is \emph{\System}. \System reduces the amount of I/O Ethereum nodes need to perform by packaging Merkle proofs of state values accessed during transaction execution. These Merkle proofs are sent along with transactions in blocks from miners to other Ethereum nodes. These Merkle proofs are called witnesses, and Ethereum nodes use these witnesses to verify transactions without needing access to the Ethereum state. I discuss \System in detail, show how I implemented \System in the Parity Ethereum client, and show that \System is not practical.
+Ethereum is a blockchain based cryptocurrency and platform for decentralized applications and suffers from scalability problems. One reason for these scalability problems is due to I/O. A proposal to improve the scalability of Ethereum is \emph{\System}. \System reduces the amount of I/O Ethereum nodes need to perform by packaging Merkle proofs of state values accessed during transaction execution. These Merkle proofs are sent along with transactions in blocks from miners to other Ethereum nodes. These Merkle proofs are called witnesses, and Ethereum nodes use these witnesses to verify transactions without needing access to the Ethereum state. I discuss \System in detail, show how I implemented \System in the Parity Ethereum client, and demonstrate that \System is not practical.
 
 \par\bigskip\noindent\vspace{3in}
 \begin{center}
@@ -694,14 +696,14 @@ One area that could be explored in the future is different techniques for reduci
 
 There are several techniques for reducing witness size~\cite{ethereum-stateless-analysis} that could be implemented. One technique is to ``cache'' frequently used Merkle-Patricia trie nodes in verifier nodes. Nodes in the first few rows of the Merkle-Patricia trie are referenced often and can be stored locally at the verifier nodes. Then, witnesses no longer need to include full Merkle proofs of state values; they would only need to include Merkle-Patricia trie nodes that are not cached at the verifiers.
 
-Another area that could be explored is implementing Ethereum 2.0 Sharding (Section~\ref{subsection:ethereumsharding}) and determining whether it increases block verification throughput.
+Another area that could be explored is implementing Ethereum 2.0 Sharding (Section~\ref{subsection:ethereumsharding}) and determining whether it increases block verification throughput. This would require measuring the throughput of both intra-shard and inter-shard transaction verification to compare against unmodified Ethereum and \System. Exploring the execute-order-verify architecture of Hyperledger Fabric and adapting it to Ethereum is also an area of interest.
 
 
 \section{Conclusion}
 
 In this project, I worked on implementing the \System proposal in Parity, a popular Ethereum client. The goal of \System is to improve the scalability of Ethereum by reducing I/O operations required to verify blocks. \System does this by bundling a \emph{witness} along with each block, where the witness contains \emph{Merkle proofs} of all the values accessed in the Ethereum state trie during execution of the block. Miners generate witnesses when creating blocks by keeping track of the values accessed during block execution. Verifiers check witnesses for validity and reconstruct Merkle trees in order to verify blocks.
 
-\System does accomplish the goal of reducing I/O operations needed to verify blocks, but the extremely large witness overhead in each block makes using \System impractical. The witness size can be $40-100\times$ the size of the block without witnesses, which makes sending blocks with witnesses over the network much more expensive.
+\System does accomplish the goal of reducing I/O operations needed to verify blocks, but the extremely large witness overhead in each block makes using \System impractical. The witness size can be $40-100\times$ the size of the block without witnesses. Reducing witness size and exploring alternate architectures such as Ethereum 2.0 Sharding and the execute-order-verify architecture of Hyperledger Fabric are potential future topics for research.
 
 
 \bibliography{\jobname}
