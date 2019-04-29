@@ -190,7 +190,7 @@
   \textsc{\textbf{Abstract}}
 \end{center}
 
-Ethereum is a blockchain based cryptocurrency and platform for decentralized applications and suffers from scalability problems. One reason for these scalability problems is due to I/O. A proposal to improve the scalability of Ethereum is \emph{\System}. \System reduces the amount of I/O Ethereum nodes need to perform by packaging Merkle proofs of state values accessed during transaction execution. These Merkle proofs are sent along with transactions in blocks from miners to other Ethereum nodes. These Merkle proofs are called witnesses, and Ethereum nodes use these witnesses to verify transactions without needing access to the Ethereum state. I discuss \System in detail, show how I implemented \System in the Parity Ethereum client, and demonstrate that \System is not practical.
+Ethereum is a blockchain based cryptocurrency and platform for decentralized applications and suffers from scalability problems. One reason for these scalability problems is due to disk I/O operations. \emph{\System} is a proposal to improve the scalability of Ethereum by reducing the amount of I/O operations Ethereum nodes need to perform. The \System proposal does this by packaging Merkle proofs of state values accessed during transaction execution. These Merkle proofs are sent along with transactions in blocks from miners to other Ethereum nodes. These Merkle proofs are called \emph{witnesses} and Ethereum nodes use these witnesses to verify transactions without needing access to the Ethereum state. In this paper, I discuss \System in detail, show how I implemented \System in the Parity Ethereum client, and demonstrate that the \System proposal is not practical.
 
 \par\bigskip\noindent\vspace{3in}
 \begin{center}
@@ -562,7 +562,7 @@ This protocol cannot be used for \System without modifications. The reason is th
 The modifications that were made to this protocol are the following:
 \begin{enumerate}
   \item In step~\ref{syncprotocol:requestBlockBodies}, peers request block bodies for \emph{all} block headers, even if the block header represents a block with no transactions or uncle blocks.
-  \item In step~\ref{syncprotocol:replyBlockBodies}, peers that send block bodies also send the witness and the hash of the state root for each block body. The witness is not used in the sync protocol, but is used to reconstruct each block from its header and block body in step~\ref{syncprotocol:reconstruct}. The state root is used to match block bodies with block headers in step~\ref{syncprotocol:reconstruct}. The root hashes of the transaction trie and uncle block trie cannot be used for matching because empty blocks share the same hashes for these tries. The state root hash of a block is unique, even for empty blocks, so it may be used to match headers with block bodies.
+  \item In step~\ref{syncprotocol:replyBlockBodies}, peers that send block bodies also send the witness and the hash of the state root for each block body. The witness is not used in the sync protocol but is used to reconstruct each block from its header and block body in step~\ref{syncprotocol:reconstruct}. The state root is used to match block bodies with block headers in step~\ref{syncprotocol:reconstruct}. The root hashes of the transaction trie and uncle block trie cannot be used for matching because empty blocks share the same hashes for these tries. The state root hash of a block is unique, even for empty blocks, so it may be used to match headers with block bodies.
 \end{enumerate}
 
 
@@ -576,7 +576,7 @@ The stateless client Parity instance executed each block using the provided witn
 
 \subsection{Results} \label{subsection:results}
 
-I tested the \System in a variety of experiments. The purpose of these experiments was to determine if \System is a viable solution to the scalability problems in Ethereum. All experiments were run on a INSERT SYSTEM SPECIFICATIONS HERE.
+I tested the \System in a variety of experiments. The purpose of these experiments was to determine if \System is a viable solution to the scalability problems in Ethereum. All experiments were run on a server with an Intel Xeon CPU E3-1220 v5 at 3.0 GHz, 16 GB of RAM, and a 1.2 TB Intel 750 series NVMe SSD.
 
 \subsubsection{Witness Sizes}
 
@@ -589,7 +589,7 @@ The first experiment I ran measured witness sizes. I imported the first 7.3 mill
   \label{fig:witnesssize}
 \end{figure}
 
-Figure~\ref{fig:witnesssize} shows the average witness size per block. There is a lot of variability in witness sizes, so the graph shows a rolling average over the last 2000 blocks at each block number. The average witness size is 723 KB over all blocks. Witness size also generally increases with block number. This is because later blocks tend to contain more transactions than earlier blocks, so more state trie nodes are required for block execution. The size of the state trie also grows as more users create Ethereum accounts, further increasing the witness size. Finally, the increasing frequency of smart contracts that can potentially touch many accounts in a single transaction also contributes to witness size.
+Figure~\ref{fig:witnesssize} shows the average witness size per block. The witness size is the total amount in bytes of the RLP serialized witness. There is a lot of variability in witness sizes, so the graph shows a rolling average over the last 2000 blocks at each block number. The average witness size is 723 KB over all blocks. Witness size also generally increases with block number. This is because later blocks tend to contain more transactions than earlier blocks, so more state trie nodes are required for block execution. The size of the state trie also grows as more users create Ethereum accounts, further increasing the witness size. Finally, the increasing frequency of smart contracts that can potentially touch many accounts in a single transaction also contributes to witness size.
 
 The largest witness size was 49.2 MB at block 2306350. The large spikes in the graph from blocks 2.3 to 2.7 million are from a DDoS attack on the Ethereum network in late 2016. This attack created millions of dead Ethereum accounts and significantly increased the size of the state trie. As a result, the witness sizes for blocks in this range are also very large, since they contain millions of newly created accounts.
 
@@ -653,7 +653,7 @@ This is a significant reduction in I/O over the unmodified Parity client, which 
 
 \subsubsection{Verification Time} \label{subsubsection:verificationtime}
 
-\System reduces I/O by bundling witnesses into blocks, but this does not necessarily translate to faster block verification times. I tested this by importing the first 2.3 million blocks along with witnesses into an unmodified Parity instance, and Parity with the \system modification. The rate at which blocks were imported is shown in Figure~\ref{fig:throughput}.
+\System reduces I/O by bundling witnesses into blocks, but this does not necessarily translate to faster block verification times. I tested this by importing the first 2.3 million blocks along with witnesses into an unmodified Parity instance, and Parity with the \system modifications. The rate at which blocks were imported is shown in Figure~\ref{fig:throughput}.
 
 \begin{figure}[H]
   \centering
@@ -662,7 +662,7 @@ This is a significant reduction in I/O over the unmodified Parity client, which 
   \label{fig:throughput}
 \end{figure}
 
-Although \System reduces I/O, the rate at which blocks can be verified is not greatly increased. Parity with \System modifications is only about 10\% faster than unmodified Parity in this benchmark. Using profiling data, I found that a large portion of the execution time spent in the stateless client is inside the SHA-3 hash function. Reconstructing the Merkle-Patricia trie from the block witness is expensive due to the large number of SHA-3 hash calculations required. To make this faster, one solution would be to encode the SHA-3 hash of each node in each Merkle proof in the witness along with the node data. However, this would further increase witness size.
+Although \System reduces I/O, the rate at which blocks can be verified is not greatly increased. Parity with \System modifications is only about 10\% faster than unmodified Parity in this benchmark. Using profiling data, I found that a large portion of the execution time spent in the stateless client is inside the SHA-3 hash function. Reconstructing the Merkle-Patricia trie from the block witness is expensive due to the large number of SHA-3 hash calculations required. To make this faster, one solution would be to encode the SHA-3 hash of each node in each Merkle proof in the witness along with the node data. However, this would further increase the witness size.
 
 
 \section{Related Work}
