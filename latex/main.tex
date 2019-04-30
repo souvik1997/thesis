@@ -7,6 +7,7 @@
 \usepackage{float}
 \usepackage{tabularx}
 \usepackage{xspace}
+\usepackage[group-separator={,}]{siunitx}
 \usepackage{amsmath,amsthm,amssymb, amsthm}
 \usepackage{enumitem}
 \usepackage{mathtools}
@@ -175,6 +176,12 @@
   howpublished = {\url{https://github.com/ethereum/wiki/wiki/Sharding-FAQ#how-can-we-facilitate-cross-shard-communication}}
 }
 
+@misc{vitalik-interview,
+  title = {{Crypto Bites: Chat with Ethereum founder Vitalik Buterin}},
+  year = {2019},
+  howpublished = {\url{https://www.youtube.com/watch?v=u-i_mTwL-FI}}
+}
+
 \end{filecontents}
 
 \title{Implementing \System in Ethereum}
@@ -190,9 +197,9 @@
   \textsc{\textbf{Abstract}}
 \end{center}
 
-Ethereum is a blockchain based cryptocurrency and platform for decentralized applications and suffers from scalability problems. One reason for these scalability problems is due to disk I/O operations. \emph{\System} is a proposal to improve the scalability of Ethereum by reducing the amount of I/O operations Ethereum nodes need to perform. The \System proposal does this by packaging Merkle proofs of state values accessed during transaction execution. These Merkle proofs are sent along with transactions in blocks from miners to other Ethereum nodes. These Merkle proofs are called \emph{witnesses} and Ethereum nodes use these witnesses to verify transactions without needing access to the Ethereum state. In this paper, I discuss \System in detail, show how I implemented \System in the Parity Ethereum client, and demonstrate that the \System proposal is not practical.
+Ethereum is a blockchain based cryptocurrency and platform for decentralized applications. A key problem that Ethereum currently faces is scalability. Ethereum can only process about 15 transactions per second, while other payment processors like Visa can process \num{24000} transactions per second.  One reason for these scalability problems is due to disk I/O operations. \emph{\System} is a proposal to improve the scalability of Ethereum by reducing the amount of I/O operations Ethereum nodes need to perform. The \System proposal does this by using Merkle proofs of state values accessed during transaction execution. These Merkle proofs are called \emph{witnesses}. Witnesses are created and sent along with transactions in blocks from miners to other Ethereum nodes. Ethereum nodes use witnesses to verify transactions without needing access to the Ethereum state, which greatly reduces the amount of I/O operations. However, a major problem with this proposal is that the size of the witnesses is extremely large, which makes using \System impractical. In this paper, I show how \System works in detail, discuss how I implemented \System in the Parity Ethereum client, and present results that demonstrate that the \System proposal is not practical.
 
-\par\bigskip\noindent\vspace{3in}
+\par\bigskip\noindent\vspace{1.5in}
 \begin{center}
   Advisor: Vijay Chidambaram \\
   Second Reader: Chris Rossbach \\
@@ -218,7 +225,7 @@ Ethereum~\cite{ethereum} is a cryptocurrency that builds upon the ideas introduc
 
 The goal of Ethereum is to create a platform for decentralized applications, and it does this by incorporating a built-in Turing complete programming language. This allows users to write \emph{smart contracts} that contain arbitrary code and run on the decentralized Ethereum network. In contrast to Bitcoin, where transactions are simply value transfers between accounts, Ethereum transactions can create and run smart contracts. The ability to run arbitrary code makes Ethereum an extremely powerful abstraction layer on which decentralized applications can be built.
 
-One problem with blockchain-based systems is that they are orders of magnitude slower than their centralized equivalent. Ethereum is only able to process about 15 transactions per second, while payment processors like Visa can process 24,000 transactions per second~\cite{visa}. New distributed applications that run on Ethereum such as CryptoKitties~\cite{cryptokitties} have slowed down transaction processing time even further. Improving the scalability of blockchain-based systems is crucial for widespread adoption.
+One problem with blockchain-based systems is that they are orders of magnitude slower than their centralized equivalent. Ethereum is only able to process about 15 transactions per second~\cite{vitalik-interview}, while payment processors like Visa can process \num{24000} transactions per second~\cite{visa}. New distributed applications that run on Ethereum such as CryptoKitties~\cite{cryptokitties} have slowed down transaction processing time even further. Improving the scalability of blockchain-based systems is crucial for widespread adoption.
 
 A proposed solution to Ethereum's scalability problems is called \emph{\System}~\cite{statelessclients}. \System was proposed by Vitalik Buterin, the founder of Ethereum, in 2017. \System aims to improve scalability by reducing I/O when verifying blocks. However, until now there has been no working prototype of \System.
 
@@ -298,7 +305,7 @@ Ethereum is a transaction-based state machine, since applying a transaction to a
  % TODO: should I go into more detail? it is pretty complicated and would take a few paragraphs to describe fully
 
 \subsection{Consensus} \label{subsection:consensus}
-Ethereum supports multiple consensus protocols, but the protocol that is most popular is \emph{Proof-Of-Work} (PoW)~\cite{bitcoin-whitepaper}. Proof-Of-Work deters abuse by requiring that nodes perform computationally intensive tasks. This consensus protocol requires that nodes send proofs that the computationally intensive work has been done. These proofs are easy to verify, but are difficult to create.
+Ethereum supports multiple consensus protocols, but the protocol that is most popular is \emph{Proof-Of-Work} (PoW)~\cite{bitcoin-whitepaper}. Proof-Of-Work deters abuse by requiring that nodes perform computationally intensive tasks. This consensus protocol requires that nodes send proofs that the computationally intensive work has been done. These proofs are easy to verify but are difficult to create.
 
 In PoW, blocks must be \emph{mined} before they are added to the hash chain. Nodes which mine blocks are called \emph{miners}. Any node in Ethereum may choose to be a miner.
 Miners mine blocks by choosing values for the \emph{nonce}, a field in a block's header. A block is successfully mined if the block's hash satisfies a certain condition. By modifying the nonce field in the block header, serializing the block header with RLP, and finding the SHA-3 hash of the serialized header, we obtain the block hash. Once a nonce that satisfies the PoW condition has been found, the miner advertises the mined block on the network. Other nodes on the network verify that the block has been mined correctly by hashing the block header and checking if it satisfies the PoW condition.
@@ -349,7 +356,7 @@ The \System proposal changes the state transition function to $STF'$, which is d
 \end{align*}
 Here, $r_S$ is the state root hash for $S$, $B$ is a block, and $r_{S'}$ is the state root hash for $S'$. $W$ is a ``witness'', which are Merkle proofs for each value in the state trie the execution of $B$ needs to access. These witnesses are packaged along with blocks and are sent over the network to other Ethereum nodes. Since witnesses contain the state values the execution of $B$ requires, Ethereum nodes do not need to access the state trie when verifying blocks. Not having a state trie greatly reduces the number of I/O operations needed to verify blocks.
 
-The only nodes that need to access the state trie are miners. In vanilla Ethereum, miners create blocks by including transactions and performing the Proof-Of-Work algorithm. The \System proposal adds an additional step: generate the witness for the block. Miners need to execute the transactions in the block using their local copy of the Ethereum state trie, and keep track of which state values were accessed to obtain Merkle proofs. The set of Merkle proofs is the witness for the block.
+The only nodes that need to access the state trie are miners. In vanilla Ethereum, miners create blocks by including transactions and performing the Proof-Of-Work algorithm. The \System proposal adds an additional step: generate the witness for the block. Miners need to execute the transactions in the block using their local copy of the Ethereum state trie and keep track of which state values were accessed to obtain Merkle proofs. The set of Merkle proofs is the witness for the block.
 
 \subsection{Example}
 
@@ -390,7 +397,7 @@ The miner first needs to execute the transaction with its local copy of the stat
   \label{fig:example:newstate}
 \end{figure}
 
-After the witness is generated, the miner needs to create a block header. This block header contains many fields for block metadata, but most importantly for this example, it contains a field for the expected \emph{state root} after the execution of the block. This new state root was calculated earlier when executing the transaction and applying the block reward, and is shown in Figure~\ref{fig:example:newstate}. Once the block header is created, the miner can serialize and hash it in order to begin the process of obtaining a nonce for this block for Proof-Of-Work consensus. The \emph{nonce} field in the header is set to the nonce that was found.
+After the witness is generated, the miner needs to create a block header. This block header contains many fields for block metadata, but most importantly for this example, it contains a field for the expected \emph{state root} after the execution of the block. This new state root was calculated earlier when executing the transaction and applying the block reward and is shown in Figure~\ref{fig:example:newstate}. Once the block header is created, the miner can serialize and hash it in order to begin the process of obtaining a nonce for this block for Proof-Of-Work consensus. The \emph{nonce} field in the header is set to the nonce that was found.
 
 After the nonce is obtained, the block is broadcast to other Ethereum nodes. The witnesses are serialized and added to the end of the block, as shown in Figure~\ref{fig:example:block}.
 
@@ -580,7 +587,7 @@ I tested the \System in a variety of experiments. The purpose of these experimen
 
 \subsubsection{Witness Sizes}
 
-The first experiment I ran measured witness sizes. I imported the first 7.3 million blocks from the Ethereum blockchain into the modified Parity Ethereum client and generated witnesses for them. The block import process is the same as the block verification process, so no changes had to be made to the client in order to generate witnesses for imported blocks.
+The first experiment I ran measured witness sizes. I imported the first 7.3 million blocks from the Ethereum blockchain into the modified Parity Ethereum client and generated witnesses for them.
 
 \begin{figure}[H]
   \centering
@@ -651,9 +658,9 @@ This is a significant reduction in I/O over the unmodified Parity client, which 
 \end{figure}
 
 
-\subsubsection{Verification Time} \label{subsubsection:verificationtime}
+\subsubsection{Block Import \& Verification Throughput} \label{subsubsection:verificationtime}
 
-\System reduces I/O by bundling witnesses into blocks, but this does not necessarily translate to faster block verification times. I tested this by importing the first 2.3 million blocks along with witnesses into an unmodified Parity instance, and Parity with the \system modifications. The rate at which blocks were imported is shown in Figure~\ref{fig:throughput}.
+\System reduces I/O by bundling witnesses into blocks, but this does not necessarily translate to faster block verification times. I tested this by importing the first 2.3 million blocks along with witnesses into an unmodified Parity instance and Parity with the \system implementation. The 2.3 million blocks were serialized with RLP and stored in a file on-disk. Importing blocks in Parity involves reading each block from disk and verifying the block, using the same verification logic as when receiving blocks over the network from other Ethereum nodes. However, importing blocks from a file removes variability due to network conditions. The rate at which blocks were imported is shown in Figure~\ref{fig:throughput}.
 
 \begin{figure}[H]
   \centering
@@ -672,21 +679,21 @@ There are several other potential solutions to scaling blockchains.
 \subsection{Ethereum 2.0 Sharding} \label{subsection:ethereumsharding}
 
 
-\System is part of a larger effort within the Ethereum community to develop \emph{Ethereum 2.0}. Ethereum 2.0 is a set of specifications for the next version of Ethereum. One of the ideas proposed in Ethereum 2.0 is to \emph{shard} the blockchain~\cite{ethereum-sharding}. Currently, all Ethereum nodes process all transactions. Once a block is mined, it is broadcast to the whole network and every Ethereum node verifies the block independently. The problem with this approach is that the throughput of the entire system is limited by the throughput of a single node.
+\System is part of a larger effort within the Ethereum community to develop \emph{Ethereum 2.0}. Ethereum 2.0 is a set of specifications for the next version of Ethereum. One of the ideas proposed in Ethereum 2.0 is to \emph{shard} the blockchain across multiple collections of nodes~\cite{ethereum-sharding}. Currently, all Ethereum nodes process all transactions. Once a block is mined, it is broadcast to the whole network and every Ethereum node verifies the block independently. The problem with this approach is that the throughput of the entire system is limited by the throughput of a single node.
 
-Ethereum 2.0 Sharding proposes to split the blockchain and state trie into partitions called \emph{``shards''}. One sharding scheme is to create shards based on account addresses. For example, all account addresses starting with \texttt{0x0...} would be in one shard, all account addresses starting with \texttt{0x1...} would be in another shard, and so on until account addresses starting with \texttt{0xf...}. This scheme creates 16 shards, one for each hexadecimal digit from \texttt{0x0} to \texttt{0xf}. Within a shard, Ethereum transactions are the same as in the current version of Ethereum. However, transactions that access accounts in different shards need to use a complex protocol involving transaction receipts~\cite{ethereum-cross-shard}.
+Ethereum 2.0 Sharding proposes to split the blockchain and state trie into partitions called \emph{``shards''}. One sharding scheme is to create shards based on account addresses. For example, all account addresses starting with \texttt{0x0...} would be in one shard, all account addresses starting with \texttt{0x1...} would be in another shard, and so on until account addresses starting with \texttt{0xf...}. This scheme creates 16 shards, one for each hexadecimal digit from \texttt{0x0} to \texttt{0xf}. Every Ethereum node belongs to a shard and serves requests for that shard. Within a shard, Ethereum transactions are the same as in the current version of Ethereum. However, transactions that access accounts in different shards need to use a complex protocol involving transaction receipts~\cite{ethereum-cross-shard}.
 
 
 \subsection{Hyperledger Fabric}
 
-Hyperledger Fabric~\cite{androulaki2018hyperledger} is a blockchain architecture that improves scalability in the \emph{permissioned} setting. In contrast to \emph{permissionless} blockchains like Ethereum, peers in permissioned blockchains are not completely untrusted. Hyperledger Fabric improves the performance of permissioned blockchains by using an \emph{execute-order-validate} architecture. The transaction flow is split into three steps:
+Hyperledger Fabric~\cite{androulaki2018hyperledger} is a blockchain architecture that improves scalability in the \emph{permissioned} setting. In contrast to \emph{permissionless} blockchains like Ethereum, peers in permissioned blockchains are not completely untrusted. Hyperledger Fabric improves the performance of permissioned blockchains by using an \emph{execute-order-validate} architecture.
 \begin{enumerate}
-  \item \emph{Endorsing:} Executing transactions and checking its correctness.
-  \item \emph{Ordering:} Use a consensus protocol to order transactions and batch them into blocks.
-  \item \emph{Validation:} Validate transactions in blocks.
+  \item \emph{Execute:} Executing transactions and checking its correctness (\emph{endorsing}).
+  \item \emph{Order:} Use a consensus protocol to order transactions and batch them into blocks.
+  \item \emph{Validate:} Validate transactions in blocks.
 \end{enumerate}
 
-There are three components to this architecture: \emph{clients}, \emph{peers}, and \emph{orderers}. In the endorsing step, clients send transactions to peers that execute them and reply back with the execution results. Then, clients send the transactions along with the execution results to the orderers, which use a consensus protocol to order the transactions and package them into blocks. Finally, peers receive these blocks and validate them.
+There are three components to this architecture: \emph{clients}, \emph{peers}, and \emph{orderers}. In the execute step, clients send transactions to peers that execute them and reply back with the execution results. Then, clients send the transactions along with the execution results to the orderers, which use a consensus protocol to order the transactions and package them into blocks. Finally, peers receive these blocks and validate them.
 
 This is similar to \System in that clients do not have access to the blockchain state. Clients submit transactions to peers for execution. This works because in the permissioned setting, the peers are not completely untrusted.
 
@@ -694,7 +701,7 @@ This is similar to \System in that clients do not have access to the blockchain 
 
 One area that could be explored in the future is different techniques for reducing witness size. In Section~\ref{subsection:results}, I showed how the witness sizes make the \System proposal impractical to use. Reducing witness sizes would not only make \System feasible in terms of network and disk space constraints, but it would also increase block verification throughput (Section~\ref{subsubsection:verificationtime}) due to fewer Merkle-Patricia nodes to read from the witness section of the block data.
 
-There are several techniques for reducing witness size~\cite{ethereum-stateless-analysis} that could be implemented. One technique is to ``cache'' frequently used Merkle-Patricia trie nodes in verifier nodes. Nodes in the first few rows of the Merkle-Patricia trie are referenced often and can be stored locally at the verifier nodes. Then, witnesses no longer need to include full Merkle proofs of state values; they would only need to include Merkle-Patricia trie nodes that are not cached at the verifiers.
+There are several techniques for reducing witness size that could be implemented~\cite{ethereum-stateless-analysis}. One technique is to ``cache'' frequently used Merkle-Patricia trie nodes in verifier nodes. Nodes in the first few rows of the Merkle-Patricia trie are referenced often and can be stored locally at the verifier nodes. Then, witnesses no longer need to include full Merkle proofs of state values; they would only need to include Merkle-Patricia trie nodes that are not cached at the verifiers.
 
 Another area that could be explored is implementing Ethereum 2.0 Sharding (Section~\ref{subsection:ethereumsharding}) and determining whether it increases block verification throughput. This would require measuring the throughput of both intra-shard and inter-shard transaction verification to compare against unmodified Ethereum and \System. Exploring the execute-order-verify architecture of Hyperledger Fabric and adapting it to Ethereum is also an area of interest.
 
