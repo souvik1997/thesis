@@ -291,11 +291,33 @@ Nodes connect with their children by using their hash, which is stored inside th
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth]{../figures/background/trie/tree_with_merkle_proof.pdf}
-  \caption{The Merkle-Patricia trie. The nodes in green represent the Merkle proof for the account with a balance of 12 ETH.} \label{fig:trie}
+  \includegraphics[width=\figurewidth, page=1]{../figures/background/trie/tree_with_merkle_proof.pdf}
+  \caption{The Merkle-Patricia trie.} \label{fig:trie}
 \end{figure}
 
-Merkle-Patricia tries also allow one to \emph{verify} values in the trie using a \emph{Merkle proof}. A Merkle proof of a value is the set of nodes along the path to the value in the trie. If someone knows the root hash of the trie and has a Merkle proof of a value, they can verify that this value exists in the trie.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\figurewidth, page=2]{../figures/background/trie/tree_with_merkle_proof.pdf}
+  \caption{The same Merkle-Patricia trie from Figure~\ref{fig:trie} with a Merkle proof for the account with balance 12 ETH. Each node is labeled $N_1$ through $N_7$. The Merkle proof for $N_6$ is the hashes of the orange nodes and the value of the green node: $\set{h(N_2), h(N_7), N_6}$. } \label{fig:triewithproof}
+\end{figure}
+
+Merkle-Patricia tries also allow one to \emph{verify} values in the trie using a \emph{Merkle proof}. A Merkle proof of a value $v$ is the set of \emph{sibling nodes along the path from the root node to the node with the value $v$}. In Figure~\ref{fig:triewithproof}, the Merkle proof for the account with a balance of 12 ETH is shown (node $N_6$). The proof is the set $\set{h(N_2), h(N_7), N_6}$, where $h$ is the SHA-3 hash function. If we additionally know the root hash of the trie (which I will call $r$), then we can verify that $N_6$ exists in the trie with the following method:
+
+\begin{align*}
+  \shortintertext{First, find the hash of $N_3$. $N_3$ is a non-leaf node that only contains the hashes of its child nodes, which are $N_6$ and $N_7$. }
+  h(N_3) &= h(h(N_6), h(N_7)) \\
+  \shortintertext{Then, find the hash of $N_1$. $N_1$, like $N_3$, only contains the hashes of its child nodes, which are $N_2$ and $N_3$}
+  h(N_1) &= h(h(N_2), h(N_3)) \\
+  \shortintertext{If $h(N_1)$ is equal to the expected root hash $r$, then we know that $N_6$ must exist in the trie.}
+\end{align*}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\figurewidth, page=3]{../figures/background/trie/tree_with_merkle_proof.pdf}
+  \caption{The same Merkle-Patricia trie from Figure~\ref{fig:triewithproof} with a Merkle proof for the account with balance 12 ETH. The Merkle proof for $N_6$ using the alternate definition is the set of nodes $\set{N_1, N_3, N_6}$. } \label{fig:triewithsimpleproof}
+\end{figure}
+
+This definition of a Merkle proof is cumbersome to use in practice because sibling nodes need to be enumerated and hashed. An equivalent definition of a Merkle proof in the context of Merkle-Patricia tries is \emph{the set of nodes along the path to the value in the trie} (Figure~\ref{fig:triewithsimpleproof}). This is an equivalent definition because non-leaf branching nodes contain the hashes of the sibling nodes. Therefore, including the entire non-leaf node in the Merkle proof automatically includes all sibling node hashes. This simpler definition of a Merkle proof will be used for the rest of this paper.
 
 
 Merkle-Patricia tries are used to store the Ethereum \emph{world state}, as well as contract storage, transactions within a block, and block receipts. The Ethereum world state is the state of all accounts in Ethereum and is uniquely identified by the SHA-3 hash of the root node. Every time an account changes (for example, if the account balance changes), the hash of the root node also changes. In Figure~\ref{fig:trie}, the state root hash is \texttt{0xb45a...3e33}, as shown in Figure~\ref{fig:trienodes}.
