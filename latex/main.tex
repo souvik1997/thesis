@@ -661,7 +661,7 @@ The disk space required for running a stateful client grows much more quickly th
 
 The projected data in Figure~\ref{fig:projectedondisksize} was obtained by using cumulative sums of block size and witness size, since the stateful client needs to store the block with its witness locally. If this experiment had continued, then the actual disk usage would be slightly less than the projected usage. This is because RocksDB compresses blockchain data. However, even with the projected data, it is clear that the space required to store witnesses for each block makes the \System proposal impractical. Currently, a new Ethereum block is mined every 15 seconds~\cite{ethereumblocktime}. Using the projected rate of disk usage growth, 1.7 MB of data will have to be stored per new block, amounting to 9.8 GB of additional disk usage per day.
 
-\subsubsection{Database Operations}
+\subsubsection{Database Operations} \label{subsubsection:iooperations}
 
 One advantage of \System is that the number of database operations is greatly reduced. The only database operations that need to be performed when verifying a block are the following:
 \begin{enumerate}
@@ -687,11 +687,11 @@ This is a significant reduction in I/O over the unmodified Parity client, which 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\figurewidth]{../figures/results/graphs/background/throughput.pdf}
-  \caption{Block import throughput of unmodified Parity and Parity with \System modifications. The solid lines show a moving average over the last 100 data points. \System performs on average 10\% faster than unmodified Parity.}
+  \caption{Block import throughput of unmodified Parity, Parity with the \System implementation , and Parity with the \System implementation additionally modified to not store the witnesses from the blocks it imports. The solid lines show a moving average over the last 100 data points. \System performs on average 10\% faster than unmodified Parity. \System with no witness storage performs on average $2.5\times$ faster than unmodified Parity.}
   \label{fig:throughput}
 \end{figure}
 
-Although \System reduces I/O, the rate at which blocks can be verified is not greatly increased. Parity with \System modifications is only about 10\% faster than unmodified Parity in this benchmark. Using profiling data, I found that a large portion of the execution time spent in the stateless client is inside the SHA-3 hash function. Reconstructing the Merkle-Patricia trie from the block witness is expensive due to the large number of SHA-3 hash calculations required. To make this faster, one solution would be to encode the SHA-3 hash of each node in each Merkle proof in the witness along with the node data. However, this would further increase the witness size.
+Although \System reduces I/O, the rate at which blocks can be verified is not greatly increased. Parity with the \System implementation is only about 10\% faster than unmodified Parity in this benchmark. To investigate the cause of such a small increase in throughput, I made another modification to the \System implementation and ran the same benchmark again. This modification changes \System so that it does not store the witness from the blocks it imports. \System with this modification performs $2.5\times$ faster than unmodified Parity in this benchmark. This suggests that storing large witnesses may negate some of the performance advantages expected from \System. Storing large witnesses involves a lot of I/O in terms of amount of bytes, although there are less I/O operations with \System (Section~\ref{subsubsection:iooperations}). This modification also shows the effect that I/O has on overall performance. Reducing I/O by not storing witnesses and not storing the Ethereum state trie results in a significant performance increase.
 
 
 \section{Related Work}
