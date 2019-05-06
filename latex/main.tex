@@ -639,7 +639,7 @@ One important detail to note is that the witness size is \emph{much} larger than
 \end{figure}
 
 
-\subsubsection{Directory Size}
+\subsubsection{Data Directory Size}
 
 One closely related statistic to witness size is the directory size of the Parity data directory. Parity keeps all data inside a directory specified on the command line with the \texttt{--base-path} argument. This data includes serialized blocks and the state trie, stored in a RocksDB database. I ran a \emph{stateful} Parity node in this experiment. A stateful Parity node uses the same stateless client code, but also maintains its own state trie just as in unmodified Ethereum. Stateful nodes are useful because they act as \emph{translators}; they act as a bridge between the existing Ethereum nodes and stateless nodes by generating witnesses from existing blocks and broadcasting them on the stateless node network. The disk space required for stateful nodes is significantly larger than the space required for an unmodified Parity node, as shown in Figure~\ref{fig:ondisksize}.
 
