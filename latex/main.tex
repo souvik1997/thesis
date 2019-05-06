@@ -207,7 +207,7 @@ Ethereum is a blockchain based cryptocurrency and platform for decentralized app
 \end{center}
 
 \newpage
-\thispagestyle{empty}
+
 \tableofcontents
 \newpage
 
@@ -711,6 +711,10 @@ Another area that could be explored is implementing Ethereum 2.0 Sharding (Secti
 In this project, I worked on implementing the \System proposal in Parity, a popular Ethereum client. The goal of \System is to improve the scalability of Ethereum by reducing I/O operations required to verify blocks. \System does this by bundling a \emph{witness} along with each block, where the witness contains \emph{Merkle proofs} of all the values accessed in the Ethereum state trie during execution of the block. Miners generate witnesses when creating blocks by keeping track of the values accessed during block execution. Verifiers check witnesses for validity and reconstruct Merkle trees in order to verify blocks.
 
 \System does accomplish the goal of reducing I/O operations needed to verify blocks, but the extremely large witness overhead in each block makes using \System impractical. The witness size can be $40-100\times$ the size of the block without witnesses. Reducing witness size and exploring alternate architectures such as Ethereum 2.0 Sharding and the execute-order-verify architecture of Hyperledger Fabric are potential future topics for research.
+
+\section{Acknowledgements}
+
+I would like to first thank my advisor Vijay Chidambaram for his guidance and advice over the last two years. His mentorship was extremely valuable not only for this work but for the other projects I have worked on as part of his research group and for developing my skills as a CS researcher. Next, I would like to thank Soujanya Ponnapalli and Aashaka Shah for proposing the initial idea to me, organizing weekly meetings, and helping me understand blockchain concepts. I also want to thank Chris Rossbach for reviewing a draft of this thesis.
 
 
 \bibliography{\jobname}
