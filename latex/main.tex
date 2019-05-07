@@ -35,7 +35,8 @@
 
 \newcommand{\system}{stateless clients\xspace}
 \newcommand{\System}{Stateless Clients\xspace}
-\newcommand{\figurewidth}{0.8\textwidth}
+\newcommand{\figurewidth}{0.9\textwidth}
+\newcommand{\examplewidth}{\textwidth}
 
 \newcommand{\repeatcaption}[2]{%
   \renewcommand{\thefigure}{\ref{#1}}%
@@ -189,6 +190,13 @@
   howpublished = {\url{https://keccak.team/files/Keccak-reference-3.0.pdf}}
 }
 
+@misc{ethereum-ddos,
+  title = {{The Ethereum network is currently undergoing a DoS attack}},
+  author = {{Jeffrey Wilcke}},
+  year = {{2016}},
+  howpublished = {\url{https://blog.ethereum.org/2016/09/22/ethereum-network-currently-undergoing-dos-attack/}}
+}
+
 \end{filecontents}
 
 \title{Implementing \System in Ethereum}
@@ -267,7 +275,7 @@ Each account in Ethereum is identified by a 160-bit address, and accounts can ei
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth]{../figures/background/transactions/example_transaction.png}
+  \includegraphics[width=\examplewidth]{../figures/background/transactions/example_transaction.png}
   \caption{An example transaction, with sender and receiver addresses~\cite{etherchain-transaction}. Transactions are uniquely identified by their hash. This is the SHA-3 hash of the serialized transaction (Section~\ref{subsection:rlp}).}
 \end{figure}
 
@@ -275,7 +283,7 @@ Each account in Ethereum is identified by a 160-bit address, and accounts can ei
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth]{../figures/background/blocks/blocks.pdf}
+  \includegraphics[width=\examplewidth]{../figures/background/blocks/blocks.pdf}
   \caption{A block hash chain with 132322 blocks; the last 3 blocks are displayed. Block hashes are shown below each block. The full hash is 256 bits, but only the first and last 16 bits are shown for brevity.}
 \end{figure}
 
@@ -290,7 +298,7 @@ Ethereum stores account balances and other account metadata in a data structure 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth]{../figures/background/trie/tree_nodes.pdf}
+  \includegraphics[width=\examplewidth]{../figures/background/trie/tree_nodes.pdf}
   \caption{Trie nodes, indexed by their hash.} \label{fig:trienodes}
 \end{figure}
 
@@ -298,13 +306,13 @@ Nodes connect with their children by using their hash, which is stored inside th
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth, page=1]{../figures/background/trie/tree_with_merkle_proof.pdf}
+  \includegraphics[width=\examplewidth, page=1]{../figures/background/trie/tree_with_merkle_proof.pdf}
   \caption{An example Merkle-Patricia trie.} \label{fig:trie}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth, page=2]{../figures/background/trie/tree_with_merkle_proof.pdf}
+  \includegraphics[width=\examplewidth, page=2]{../figures/background/trie/tree_with_merkle_proof.pdf}
   \caption{The same Merkle-Patricia trie from Figure~\ref{fig:trie} with a Merkle proof for the account with balance 12 ETH. Each node is labeled $N_1$ through $N_7$. The Merkle proof for $N_6$ is the hashes of the orange nodes and the value of the green node: $\set{h(N_2), h(N_7), N_6}$. } \label{fig:triewithproof}
 \end{figure}
 
@@ -320,7 +328,7 @@ Merkle-Patricia tries also allow one to \emph{verify} that values exist in the t
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth, page=3]{../figures/background/trie/tree_with_merkle_proof.pdf}
+  \includegraphics[width=\examplewidth, page=3]{../figures/background/trie/tree_with_merkle_proof.pdf}
   \caption{The same Merkle-Patricia trie from Figure~\ref{fig:triewithproof} with a Merkle proof for the account with balance 12 ETH. The Merkle proof for $N_6$ using the alternate definition is the set of nodes $\set{N_1, N_3, N_6}$. } \label{fig:triewithsimpleproof}
 \end{figure}
 
@@ -365,14 +373,14 @@ Ethereum currently suffers from scalability problems. As stated in section~\ref{
   \label{fig:blockverificationtime}
 \end{figure}
 
+Figure~\ref{fig:blockverificationtime} shows that the number of I/O operations is correlated with how long it takes to verify a block. In Figure~\ref{fig:blockverification}, the number of I/O operations is also increasing with block number. This means that the number of I/O operations will continue to increase in the future, further slowing down block verification time and affecting the scalability of Ethereum.
+
 \begin{figure}[H]
   \centering
   \includegraphics[width=\figurewidth]{../figures/results/graphs/background/db-io-ops.pdf}
   \caption{I/O operations performed during block verification}
   \label{fig:blockverification}
 \end{figure}
-
-Figure~\ref{fig:blockverificationtime} shows that the number of I/O operations is correlated with how long it takes to verify a block. In Figure~\ref{fig:blockverification}, the number of I/O operations is also increasing with block number. This means that the number of I/O operations will continue to increase in the future, further slowing down block verification time and affecting the scalability of Ethereum.
 
 \subsection{\System}
 
@@ -399,7 +407,7 @@ In this section, I will show how the \System proposal works from block creation 
 The initial Merkle-Patricia state trie is shown in Figure~\ref{fig:example:initial}. This trie contains 22 Ethereum accounts. Four accounts are shown, specifically accounts \texttt{0x1354\ldots f78b}, \texttt{0x298a\ldots e2b1}, \texttt{0x737b\ldots fc91}, \texttt{0xa98b\ldots 3645}.
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth,page=1]{../figures/design/example.pdf}
+  \includegraphics[width=\examplewidth,page=1]{../figures/design/example.pdf}
   \caption{Initial Merkle-Patricia trie. This trie has 22 Ethereum accounts, shown in the last level of the trie. Four accounts are shown in an expanded view. The state root hash is \texttt{0xa34c\ldots 2f55}. The remaining empty nodes are intermediate Merkle-Patricia trie nodes.}
   \label{fig:example:initial}
 \end{figure}
@@ -417,14 +425,14 @@ The miner first needs to execute the transaction with its local copy of the stat
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth,page=3]{../figures/design/example.pdf}
+  \includegraphics[width=\examplewidth,page=3]{../figures/design/example.pdf}
   \caption{The same Merkle-Patricia trie from Figure~\ref{fig:example:initial}, but the nodes in green are the Merkle proofs for the accounts accessed.}
   \label{fig:example:proof}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth,page=4]{../figures/design/example.pdf}
+  \includegraphics[width=\examplewidth,page=4]{../figures/design/example.pdf}
   \caption{The updated Merkle-Patricia trie. Note that the balances for the accounts have been changed, and the state root hash is different from the state root hash in Figure~\ref{fig:example:initial}.}
   \label{fig:example:newstate}
 \end{figure}
@@ -435,7 +443,7 @@ After the nonce is obtained, the block is broadcast to other Ethereum nodes. The
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth]{../figures/design/example_block.pdf}
+  \includegraphics[width=\examplewidth]{../figures/design/example_block.pdf}
   \caption{The newly created block. The Merkle-Patricia nodes in the witnesses are serialized and added to the end of the block. The \emph{coinbase} field in the block header is set to the miner's account address.}
   \label{fig:example:block}
 \end{figure}
@@ -458,7 +466,7 @@ To determine which node is the root of the trie, the verifier uses the \emph{par
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth,page=5]{../figures/design/example.pdf}
+  \includegraphics[width=\examplewidth,page=5]{../figures/design/example.pdf}
   \caption{The Merkle-Patricia trie reconstructed from the witness in the block.}
   \label{fig:example:reconstructed}
 \end{figure}
@@ -467,7 +475,7 @@ The verifier then executes the transaction and applies the block reward, using t
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth,page=6]{../figures/design/example.pdf}
+  \includegraphics[width=\examplewidth,page=6]{../figures/design/example.pdf}
   \caption{The updated reconstructed Merkle-Patricia trie. Note that the account balances and the state root hash have changed. The state root hash matches the expected state root hash in the block header in Figure~\ref{fig:example:block}.}
   \label{fig:example:newconstructed}
 \end{figure}
@@ -480,7 +488,7 @@ I implemented \System in Parity, a popular Ethereum client written in the Rust p
 \subsection{State backend}
 
 
-Ethereum state in Parity is accessed through a \texttt{State} struct. \texttt{State} handles the following tasks:
+Ethereum state in Parity is accessed through an instance of a \texttt{State} struct. Structs in Rust are similar to classes in C++ and Java. \texttt{State} handles the following tasks:
 \begin{enumerate}
   \item Create recoverable checkpoints.
   \item Create and retrieve smart contracts.
@@ -512,7 +520,7 @@ The ``standard'' backend that Parity uses is the \texttt{StateDB} backend. \text
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth]{../figures/implementation/code_layout.pdf}
+  \includegraphics[width=\examplewidth]{../figures/implementation/code_layout.pdf}
   \caption{The relationships between structs in Parity. In unmodified Parity, \texttt{State} communicates with \texttt{StateDB} which uses an on-disk RocksDB key-value store. In the \System implementation, miners have a different code path than verifiers. Miners use \texttt{WitnessCreate} to generate witnesses by intercepting \texttt{Get()} calls to \texttt{StateDB}. Witnesses are extracted from \texttt{WitnessCreate} with \texttt{extractWitnesses()}. Verifiers use \texttt{WitnessCheck} to check these witnesses and use them as a state store for executing transactions.}
   \label{fig:parityrelationships}
 \end{figure}
@@ -615,7 +623,7 @@ The stateless client Parity instance executed each block using the provided witn
 
 \subsection{Results} \label{subsection:results}
 
-I tested the \System in a variety of experiments. The purpose of these experiments was to determine if \System is a viable solution to the scalability problems in Ethereum. All experiments were run on a server with an Intel Xeon CPU E3-1220 v5 at 3.0 GHz, 16 GB of RAM, and a 1.2 TB Intel 750 series NVMe SSD.
+I tested the \System implementation in a variety of experiments. The purpose of these experiments was to determine if \System is a viable solution to the scalability problems in Ethereum. All experiments were run on a server with an Intel Xeon CPU E3-1220 v5 at 3.0 GHz, 16 GB of RAM, and a 1.2 TB Intel 750 series NVMe SSD.
 
 \subsubsection{Witness Sizes}
 
@@ -623,27 +631,27 @@ The first experiment I ran measured witness sizes. I imported the first 7.3 mill
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{../figures/results/graphs/background/witness-size.pdf}
+  \includegraphics[width=\figurewidth]{../figures/results/graphs/background/witness-size.pdf}
   \caption{Average witness size vs. block number}
   \label{fig:witnesssize}
 \end{figure}
 
 Figure~\ref{fig:witnesssize} shows the average witness size per block. The witness size is the total amount in bytes of the RLP serialized witness. There is a lot of variability in witness sizes, so the graph shows a rolling average over the last 2000 blocks at each block number. The average witness size is 723 KB over all blocks. Witness size also generally increases with block number. This is because later blocks tend to contain more transactions than earlier blocks, so more state trie nodes are required for block execution. The size of the state trie also grows as more users create Ethereum accounts, further increasing the witness size. Finally, the increasing frequency of smart contracts that can potentially touch many accounts in a single transaction also contributes to witness size.
 
-The largest witness size was 49.2 MB at block 2306350. The large spikes in the graph from blocks 2.3 to 2.7 million are from a DDoS attack on the Ethereum network in late 2016. This attack created millions of Ethereum accounts and significantly increased the size of the state trie. As a result, the witness sizes for blocks in this range are also very large, since they contain millions of newly created accounts.
+The largest witness size was 49.2 MB at block 2306350. The large spikes in the graph from blocks 2.3 to 2.7 million are from a DDoS attack on the Ethereum network in late 2016~\cite{ethereum-ddos}. This attack created millions of Ethereum accounts and significantly increased the size of the state trie. As a result, the witness sizes for blocks in this range are also very large, since they contain millions of newly created accounts.
 
 One important detail to note is that the witness size is \emph{much} larger than the block size excluding the witness. Figure~\ref{fig:blocksize} shows the block sizes excluding the witness, which is the same as the block sizes in unmodified Ethereum. Figure~\ref{fig:witnesssizepct} shows the overhead of including witnesses as a percentage increase over block size excluding witnesses. Witnesses increase block size by about 40x-140x, and the percentage increases with block number.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{../figures/results/graphs/background/block-size.pdf}
+  \includegraphics[width=\figurewidth]{../figures/results/graphs/background/block-size.pdf}
   \caption{Average block size (excluding witness) vs. block number}
   \label{fig:blocksize}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{../figures/results/graphs/background/witness-block-size.pdf}
+  \includegraphics[width=\figurewidth]{../figures/results/graphs/background/witness-block-size.pdf}
   \caption{Average witness size overhead as percentage increase over block size}
   \label{fig:witnesssizepct}
 \end{figure}
@@ -703,7 +711,7 @@ This is a significant reduction in database I/O operations over the unmodified P
 
 Although \System reduces I/O, the rate at which blocks can be verified is not greatly increased. Parity with the \System implementation is only about 10\% faster than unmodified Parity in this benchmark. To investigate the cause of such a small increase in throughput, I made another modification to the \System implementation and ran the same benchmark again. This modification changes \System so that it does not store the witness from the blocks it imports. \System with this modification performs $2.5\times$ faster than unmodified Parity in this benchmark. This suggests that storing large witnesses negates some of the performance advantages expected from \System. Storing large witnesses involves a lot of I/O in terms of the amount of bytes, although there are less I/O operations with \System (Section~\ref{subsubsection:iooperations}). This modification also shows the effect that I/O has on overall performance. Reducing I/O by not storing witnesses and not storing the Ethereum state trie results in a significant performance increase.
 
-The modification to \System to not store witnesses is not a solution that would work in a production-grade implementation. The reason is that stateless nodes receive witnesses over the network from other nodes. If stateless nodes discarded the witnesses they received, they would not be able to send those witnesses to other stateless nodes.
+The modification to \System to not store witnesses is not a solution that would be acceptable in a production-grade implementation. The reason is that stateless nodes receive witnesses over the network from other nodes. If stateless nodes discarded the witnesses they received, they would not be able to send those witnesses to other stateless nodes.
 
 
 \section{Related Work}
@@ -715,7 +723,7 @@ There are several other potential solutions to scaling blockchains.
 
 \System is part of a larger effort within the Ethereum community to develop \emph{Ethereum 2.0}. Ethereum 2.0 is a set of specifications for the next version of Ethereum. One of the ideas proposed in Ethereum 2.0 is to \emph{shard} the blockchain across multiple collections of nodes~\cite{ethereum-sharding}. Currently, all Ethereum nodes process all transactions. Once a block is mined, it is broadcast to the whole network and every Ethereum node verifies the block independently. The problem with this approach is that the throughput of the entire system is limited by the throughput of a single node.
 
-Ethereum 2.0 Sharding proposes to split the blockchain and state trie into partitions called \emph{``shards''}. One sharding scheme is to create shards based on account addresses. For example, all account addresses starting with \texttt{0x0...} would be in one shard, all account addresses starting with \texttt{0x1...} would be in another shard, and so on until account addresses starting with \texttt{0xf...}. This scheme creates 16 shards, one for each hexadecimal digit from \texttt{0x0} to \texttt{0xf}. Every Ethereum node belongs to a shard and serves requests for that shard. Within a shard, Ethereum transactions are the same as in the current version of Ethereum. However, transactions that access accounts in different shards need to use a complex protocol involving transaction receipts~\cite{ethereum-cross-shard}.
+Ethereum 2.0 Sharding proposes to split the blockchain and state trie into partitions called \emph{``shards''}. One sharding scheme is to create shards based on account addresses. For example, all account addresses starting with \texttt{0x0...} would be in one shard, all account addresses starting with \texttt{0x1...} would be in another shard, and so on until account addresses starting with \texttt{0xf...}. This scheme creates 16 shards, one for each hexadecimal digit from \texttt{0x0} to \texttt{0xf}. Every Ethereum node belongs to a shard and serves requests for that shard. Within a shard, Ethereum transactions are the same as in the current version of Ethereum. However, transactions that access accounts in different shards need to use a complex protocol involving transaction receipts~\cite{ethereum-cross-shard}. Cross-shard communication is therefore relatively costly.
 
 
 \subsection{Hyperledger Fabric}
@@ -748,7 +756,7 @@ In this project, I worked on implementing the \System proposal in Parity, a popu
 
 \section{Acknowledgements}
 
-I would like to first thank my advisor Vijay Chidambaram for his guidance and advice over the last two years. His mentorship was extremely valuable not only for this work but for the other projects I have worked on as part of his research group and for developing my skills as a CS researcher. Next, I would like to thank Soujanya Ponnapalli and Aashaka Shah for proposing the initial idea to me, organizing weekly meetings, and helping me understand blockchain concepts. I also want to thank Chris Rossbach for reviewing a draft of this thesis.
+I would like to first thank my advisor Prof. Vijay Chidambaram for his guidance and advice over the last two years. His mentorship was extremely valuable not only for this work but for the other projects I have worked on as part of his research group and for developing my skills as a CS researcher. Next, I would like to thank Soujanya Ponnapalli and Aashaka Shah for proposing the initial idea to me, organizing weekly meetings, and helping me understand blockchain concepts. I also want to thank Prof. Chris Rossbach for reviewing a draft of this thesis.
 
 
 \bibliography{\jobname}
