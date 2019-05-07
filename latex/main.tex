@@ -182,6 +182,13 @@
   howpublished = {\url{https://www.youtube.com/watch?v=u-i_mTwL-FI}}
 }
 
+@misc{keccak,
+  title = {{The Keccak Reference}},
+  author={{Guido Bertoni, Joan Daemen, Micha\"el Peeters, Gilles Van Assche}},
+  year = {2011},
+  howpublished = {\url{https://keccak.team/files/Keccak-reference-3.0.pdf}}
+}
+
 \end{filecontents}
 
 \title{Implementing \System in Ethereum}
@@ -256,7 +263,7 @@ These EVM opcodes allow the EVM to be Turing complete, limited only by the follo
 
 \emph{Transactions} are how the outside world communicates with Ethereum. A transaction can either transfer ETH between two accounts, create a smart contract, or call a smart contract. A transaction has a \emph{sender} and a \emph{receiver} which are identified by account addresses.
 
-Each account in Ethereum is identified by a 160-bit address, and accounts can either belong to smart contracts or individuals. Smart contract addresses are determined when a contract is created using metadata from the account of the contract creator (the sender of the contract create transaction). Individual accounts use public and private keys, and the account address is the rightmost 160 bits of the SHA-3 (Keccak) hash of the public key. % footnote: explain Keccak vs SHA-3???
+Each account in Ethereum is identified by a 160-bit address, and accounts can either belong to smart contracts or individuals. Smart contract addresses are determined when a contract is created using metadata from the account of the contract creator (the sender of the contract create transaction). Individual accounts use public and private keys, and the account address is the rightmost 160 bits of the SHA-3\footnote{Ethereum uses the SHA3-256 hash function, also known as Keccak256 \cite{keccak}.} hash of the public key. % footnote: explain Keccak vs SHA-3???
 
 \begin{figure}[H]
   \centering
@@ -279,7 +286,7 @@ Ethereum has a native serialization encoding called Recursive Length Prefix (RLP
 
 \subsection{Merkle-Patricia Trie} \label{subsection:merklepatriciatrie}
 
-Ethereum stores account balances and other account metadata in a data structure called a \emph{Merkle-Patricia trie}~\cite{merkle-patricia-trie}. A Merkle-Patricia trie builds upon both radix tries and Merkle trees~\cite{merkle1987digital}. Each node in the trie is hashed by first serializing with RLP, then using the SHA-3 hash function. This builds a key-value map of node hashes to nodes.
+Ethereum stores account balances and other account metadata in a data structure called a \emph{Merkle-Patricia trie}~\cite{merkle-patricia-trie}. A Merkle-Patricia trie builds upon both radix tries and Merkle trees~\cite{merkle1987digital}. Each node in the trie is hashed by first serializing with RLP, then using the SHA-3 hash function. This builds a key-value map of node hashes to nodes (Figures~\ref{fig:trienodes}~and~\ref{fig:trie}).
 
 \begin{figure}[H]
   \centering
@@ -292,7 +299,7 @@ Nodes connect with their children by using their hash, which is stored inside th
 \begin{figure}[H]
   \centering
   \includegraphics[width=\figurewidth, page=1]{../figures/background/trie/tree_with_merkle_proof.pdf}
-  \caption{The Merkle-Patricia trie.} \label{fig:trie}
+  \caption{An example Merkle-Patricia trie.} \label{fig:trie}
 \end{figure}
 
 \begin{figure}[H]
@@ -301,13 +308,13 @@ Nodes connect with their children by using their hash, which is stored inside th
   \caption{The same Merkle-Patricia trie from Figure~\ref{fig:trie} with a Merkle proof for the account with balance 12 ETH. Each node is labeled $N_1$ through $N_7$. The Merkle proof for $N_6$ is the hashes of the orange nodes and the value of the green node: $\set{h(N_2), h(N_7), N_6}$. } \label{fig:triewithproof}
 \end{figure}
 
-Merkle-Patricia tries also allow one to \emph{verify} values in the trie using a \emph{Merkle proof}. A Merkle proof of a value $v$ is the set of \emph{sibling nodes along the path from the root node to the node with the value $v$}. In Figure~\ref{fig:triewithproof}, the Merkle proof for the account with a balance of 12 ETH is shown (node $N_6$). The proof is the set $\set{h(N_2), h(N_7), N_6}$, where $h$ is the SHA-3 hash function. If we additionally know the root hash of the trie (which I will call $r$), then we can verify that $N_6$ exists in the trie with the following method:
+Merkle-Patricia tries also allow one to \emph{verify} that values exist in the trie using a \emph{Merkle proof}. A Merkle proof of a value $v$ is the set of \emph{sibling nodes along the path from the root node to the node with the value $v$}. Merkle proofs allow one to verify that $v$ exists in a Merkle-Patricia trie without needing access to the whole trie. In Figure~\ref{fig:triewithproof}, the Merkle proof for the account with a balance of 12 ETH is shown (node $N_6$). The proof is the set $\set{h(N_2), h(N_7), N_6}$, where $h$ is the SHA-3 hash function. If we additionally know the root hash of the trie (which I will call $r$), then we can verify that $N_6$ exists in the trie with the following method:
 
 \begin{align*}
   \shortintertext{First, find the hash of $N_3$. $N_3$ is a non-leaf node that only contains the hashes of its child nodes, which are $N_6$ and $N_7$. }
-  h(N_3) &= h(h(N_6), h(N_7)) \\
-  \shortintertext{Then, find the hash of $N_1$. $N_1$, like $N_3$, only contains the hashes of its child nodes, which are $N_2$ and $N_3$}
-  h(N_1) &= h(h(N_2), h(N_3)) \\
+  h(N_3) &= h(\left[ h(N_6), h(N_7) \right]) \\
+  \shortintertext{Then, find the hash of $N_1$. $N_1$, like $N_3$, only contains the hashes of its child nodes, which are $N_2$ and $N_3$.}
+  h(N_1) &= h(\left[ h(N_2), h(N_3) \right]) \\
   \shortintertext{If $h(N_1)$ is equal to the expected root hash $r$, then we know that $N_6$ must exist in the trie.}
 \end{align*}
 
@@ -316,6 +323,9 @@ Merkle-Patricia tries also allow one to \emph{verify} values in the trie using a
   \includegraphics[width=\figurewidth, page=3]{../figures/background/trie/tree_with_merkle_proof.pdf}
   \caption{The same Merkle-Patricia trie from Figure~\ref{fig:triewithproof} with a Merkle proof for the account with balance 12 ETH. The Merkle proof for $N_6$ using the alternate definition is the set of nodes $\set{N_1, N_3, N_6}$. } \label{fig:triewithsimpleproof}
 \end{figure}
+
+Merkle proofs are secure because finding SHA-3 hash collisions is extremely difficult
+~\cite{keccak} and no collision has been found thus far. To break the security of Merkle proofs, an adversary needs to find collisions in the SHA-3 hash function to provide attacker-controlled values that hash to the expected hash $r$.
 
 This definition of a Merkle proof is cumbersome to use in practice because sibling nodes need to be enumerated and hashed. An equivalent definition of a Merkle proof in the context of Merkle-Patricia tries is \emph{the set of nodes along the path to the value in the trie} (Figure~\ref{fig:triewithsimpleproof}). This is an equivalent definition because non-leaf branching nodes contain the hashes of the sibling nodes. Therefore, including the entire non-leaf node in the Merkle proof automatically includes all sibling node hashes. This simpler definition of a Merkle proof will be used for the rest of this paper.
 
@@ -334,7 +344,7 @@ Miners mine blocks by choosing values for the \emph{nonce}, a field in a block's
 
 Ethereum mining uses the \emph{Ethash} algorithm~\cite{ethash}. This algorithm is designed to be difficult to run on application-specific integrated circuits (ASICs) by using a significant amount of memory. Ethash uses a resource that is several gigabytes large and is regenerated every \emph{epoch transition}, which happens every 30000 blocks. This shared resource is called a DAG (directed acyclic graph) and is only needed to create the Proof-Of-Work. The DAG is not required for Proof-Of-Work verification.
 
-Miners in Ethereum are rewarded by a predetermined block reward and by the transaction fees from the transactions they include in the block. Reward distribution is done by including the account address of the miner in the block's header. This is called the block's \emph{coinbase}. Miners also do not coordinate mining blocks and race against each other to mine the next block in the block chain. Since there is no coordination, it is possible for more than one block to be generated simultaneously. If this happens, then one block will be chosen to be added onto the main block chain, and the other blocks become \emph{uncle blocks}. Miners are still rewarded for producing uncle blocks, but the reward is not as high as for producing a normal block.
+Miners in Ethereum are rewarded by a predetermined block reward and by the transaction fees from the transactions they include in the block. Reward distribution is done by including the account address of the miner in the block's header. This is called the block's \emph{coinbase}. Miners also do not coordinate mining blocks and race against each other to mine the next block in the block chain. Since there is no coordination, it is possible for more than one block to be generated simultaneously. If this happens, then the nodes in the Ethereum network use a protocol to choose one block to add to the main block chain, and the other blocks become \emph{uncle blocks}. Miners are still rewarded for producing uncle blocks, but the reward is not as high as for producing a normal block.
 
 % sources:
 % https://www.investinblockchain.com/vitalik-ethereum-needs-100k-transactions-per-second/
@@ -346,7 +356,7 @@ Miners in Ethereum are rewarded by a predetermined block reward and by the trans
 
 % Use RainBlock motivation/background for inspiration
 
-Ethereum currently suffers from scalability problems. As stated in section~\ref{section:introduction}, Ethereum can only support about 15 transactions per second which is too slow for widespread adoption. One reason for the lack of scalability is I/O. The amount of I/O nodes need to perform is significant and slows down transaction processing. Disk I/O has also been a source of denial-of-service (DoS) attacks in Ethereum~\cite{statelessclients}. Most of these I/O operations come from traversing and updating the Merkle-Patricia trie storing the Ethereum world state. Making matters worse, the way Merkle-Patricia tries are stored on disk causes pointer-chasing random disk reads. Merkle-Patricia tries are typically stored in key-value stores such as LevelDB or RocksDB, where each value is stored using the SHA-3 hash of the value as the key. This randomizes the location of state trie nodes on disk.
+Ethereum currently suffers from scalability problems. As stated in section~\ref{section:introduction}, Ethereum can only support about 15 transactions per second which is too slow for widespread adoption. One reason for the lack of scalability is I/O. The amount of I/O nodes need to perform is significant and slows down transaction processing. Disk I/O has also been a source of denial-of-service (DoS) attacks in Ethereum~\cite{statelessclients}. Most of these I/O operations come from traversing and updating the Merkle-Patricia trie storing the Ethereum world state. Making matters worse, the way Merkle-Patricia tries are stored on-disk causes pointer-chasing random disk reads. Merkle-Patricia tries are typically stored in key-value stores such as LevelDB or RocksDB, where each value is stored using the SHA-3 hash of the value as the key. This randomizes the location of state trie nodes on-disk.
 
 \begin{figure}[H]
   \centering
@@ -370,7 +380,7 @@ The \System proposal, as the name suggests, changes Ethereum such that Ethereum 
 \begin{align*}
   STF(S, B) &\to S'
 \end{align*}
-Here, $S$ is the initial state, $B$ is an Ethereum block, and $S'$ is the new updated state created from applying the transactions in $B$ to $S$.
+Here, $S$ is the initial state, $B$ is an Ethereum block, and $S'$ is the newly updated state created from applying the transactions in $B$ to $S$.
 
 The \System proposal changes the state transition function to $STF'$, which is defined here:
 \begin{align*}
@@ -551,7 +561,7 @@ An RLP serialized block has the following layout:
   \end{enumerate}
 \end{enumerate}
 
-I added an additional field in the \emph{Body} section of the serialized block to store the serialized block witness. The block witness is a list of database values, which can be serialized easily with RLP. The new serialized block format is used when storing blocks on disk, and when syncing blocks over the network. Adding a new field in this location maintains backwards compatibility with unmodified versions of Ethereum.
+I added an additional field in the \emph{Body} section of the serialized block to store the serialized block witness. The block witness is a list of database values, which can be serialized easily with RLP. The new serialized block format is used when storing blocks on-disk, and when syncing blocks over the network. Adding a new field in this location maintains backwards compatibility with unmodified versions of Ethereum.
 
 \subsection{Block sync protocol}
 
@@ -613,27 +623,27 @@ The first experiment I ran measured witness sizes. I imported the first 7.3 mill
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth]{../figures/results/graphs/background/witness-size.pdf}
+  \includegraphics[width=\textwidth]{../figures/results/graphs/background/witness-size.pdf}
   \caption{Average witness size vs. block number}
   \label{fig:witnesssize}
 \end{figure}
 
 Figure~\ref{fig:witnesssize} shows the average witness size per block. The witness size is the total amount in bytes of the RLP serialized witness. There is a lot of variability in witness sizes, so the graph shows a rolling average over the last 2000 blocks at each block number. The average witness size is 723 KB over all blocks. Witness size also generally increases with block number. This is because later blocks tend to contain more transactions than earlier blocks, so more state trie nodes are required for block execution. The size of the state trie also grows as more users create Ethereum accounts, further increasing the witness size. Finally, the increasing frequency of smart contracts that can potentially touch many accounts in a single transaction also contributes to witness size.
 
-The largest witness size was 49.2 MB at block 2306350. The large spikes in the graph from blocks 2.3 to 2.7 million are from a DDoS attack on the Ethereum network in late 2016. This attack created millions of dead Ethereum accounts and significantly increased the size of the state trie. As a result, the witness sizes for blocks in this range are also very large, since they contain millions of newly created accounts.
+The largest witness size was 49.2 MB at block 2306350. The large spikes in the graph from blocks 2.3 to 2.7 million are from a DDoS attack on the Ethereum network in late 2016. This attack created millions of Ethereum accounts and significantly increased the size of the state trie. As a result, the witness sizes for blocks in this range are also very large, since they contain millions of newly created accounts.
 
 One important detail to note is that the witness size is \emph{much} larger than the block size excluding the witness. Figure~\ref{fig:blocksize} shows the block sizes excluding the witness, which is the same as the block sizes in unmodified Ethereum. Figure~\ref{fig:witnesssizepct} shows the overhead of including witnesses as a percentage increase over block size excluding witnesses. Witnesses increase block size by about 40x-140x, and the percentage increases with block number.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth]{../figures/results/graphs/background/block-size.pdf}
+  \includegraphics[width=\textwidth]{../figures/results/graphs/background/block-size.pdf}
   \caption{Average block size (excluding witness) vs. block number}
   \label{fig:blocksize}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\figurewidth]{../figures/results/graphs/background/witness-block-size.pdf}
+  \includegraphics[width=\textwidth]{../figures/results/graphs/background/witness-block-size.pdf}
   \caption{Average witness size overhead as percentage increase over block size}
   \label{fig:witnesssizepct}
 \end{figure}
@@ -641,7 +651,7 @@ One important detail to note is that the witness size is \emph{much} larger than
 
 \subsubsection{Data Directory Size}
 
-One closely related statistic to witness size is the directory size of the Parity data directory. Parity keeps all data inside a directory specified on the command line with the \texttt{--base-path} argument. This data includes serialized blocks and the state trie, stored in a RocksDB database. I ran a \emph{stateful} Parity node in this experiment. A stateful Parity node uses the same stateless client code, but also maintains its own state trie just as in unmodified Ethereum. Stateful nodes are useful because they act as \emph{translators}; they act as a bridge between the existing Ethereum nodes and stateless nodes by generating witnesses from existing blocks and broadcasting them on the stateless node network. The disk space required for stateful nodes is significantly larger than the space required for an unmodified Parity node, as shown in Figure~\ref{fig:ondisksize}.
+One closely related statistic to witness size is the directory size of the Parity data directory. Parity keeps all data inside a directory specified on the command line with the \texttt{--base-path} argument. This data includes serialized blocks and the state trie, stored in a RocksDB database. I ran a \emph{stateful} Parity node in this experiment. A stateful Parity node uses the same stateless client code, but also maintains its own state trie just as in unmodified Ethereum. Stateful nodes are useful because they act as \emph{translators}~\cite{statelessclients}; they act as a bridge between the existing Ethereum nodes and stateless nodes by generating witnesses for existing blocks and broadcasting them on the stateless node network. The disk space required for stateful nodes is significantly larger than the space required for an unmodified Parity node, as shown in Figure~\ref{fig:ondisksize}.
 
 \begin{figure}[H]
   \centering
@@ -663,7 +673,7 @@ The projected data in Figure~\ref{fig:projectedondisksize} was obtained by using
 
 \subsubsection{Database Operations} \label{subsubsection:iooperations}
 
-One advantage of \System is that the number of database operations is greatly reduced. The only database operations that need to be performed when verifying a block are the following:
+One advantage of \System is that the number of database I/O operations is greatly reduced. The only database operations that need to be performed when verifying a block are the following:
 \begin{enumerate}
   \item One \textsc{Read} operation to check if the block has already been verified.
   \item One \textsc{Read} operation to check the epoch transition (Section~\ref{subsection:consensus}). This operation is not strictly necessary, and with further optimization this may be removed.
@@ -671,7 +681,7 @@ One advantage of \System is that the number of database operations is greatly re
   \item One \textsc{Write} operation to store the new block data.
 \end{enumerate}
 
-This is a significant reduction in I/O over the unmodified Parity client, which is shown in Figure~\ref{fig:blockverification}.
+This is a significant reduction in database I/O operations over the unmodified Parity client, which is shown in Figure~\ref{fig:blockverification}.
 
 \begin{figure}[H]
   \centering
@@ -691,7 +701,9 @@ This is a significant reduction in I/O over the unmodified Parity client, which 
   \label{fig:throughput}
 \end{figure}
 
-Although \System reduces I/O, the rate at which blocks can be verified is not greatly increased. Parity with the \System implementation is only about 10\% faster than unmodified Parity in this benchmark. To investigate the cause of such a small increase in throughput, I made another modification to the \System implementation and ran the same benchmark again. This modification changes \System so that it does not store the witness from the blocks it imports. \System with this modification performs $2.5\times$ faster than unmodified Parity in this benchmark. This suggests that storing large witnesses may negate some of the performance advantages expected from \System. Storing large witnesses involves a lot of I/O in terms of amount of bytes, although there are less I/O operations with \System (Section~\ref{subsubsection:iooperations}). This modification also shows the effect that I/O has on overall performance. Reducing I/O by not storing witnesses and not storing the Ethereum state trie results in a significant performance increase.
+Although \System reduces I/O, the rate at which blocks can be verified is not greatly increased. Parity with the \System implementation is only about 10\% faster than unmodified Parity in this benchmark. To investigate the cause of such a small increase in throughput, I made another modification to the \System implementation and ran the same benchmark again. This modification changes \System so that it does not store the witness from the blocks it imports. \System with this modification performs $2.5\times$ faster than unmodified Parity in this benchmark. This suggests that storing large witnesses negates some of the performance advantages expected from \System. Storing large witnesses involves a lot of I/O in terms of the amount of bytes, although there are less I/O operations with \System (Section~\ref{subsubsection:iooperations}). This modification also shows the effect that I/O has on overall performance. Reducing I/O by not storing witnesses and not storing the Ethereum state trie results in a significant performance increase.
+
+The modification to \System to not store witnesses is not a solution that would work in a production-grade implementation. The reason is that stateless nodes receive witnesses over the network from other nodes. If stateless nodes discarded the witnesses they received, they would not be able to send those witnesses to other stateless nodes.
 
 
 \section{Related Work}
@@ -721,7 +733,7 @@ This is similar to \System in that clients do not have access to the blockchain 
 
 \section{Future Work}
 
-One area that could be explored in the future is different techniques for reducing witness size. In Section~\ref{subsection:results}, I showed how the witness sizes make the \System proposal impractical to use. Reducing witness sizes would not only make \System feasible in terms of network and disk space constraints, but it would also increase block verification throughput (Section~\ref{subsubsection:verificationtime}) due to fewer Merkle-Patricia nodes to read from the witness section of the block data.
+One area that could be explored in the future is different techniques for reducing witness size. In Section~\ref{subsection:results}, I showed how the witness sizes make the \System proposal impractical to use. Reducing witness sizes would not only make \System feasible in terms of network and disk space constraints, but it would also increase block verification throughput (Section~\ref{subsubsection:verificationtime}) due to smaller witnesses stored on-disk.
 
 There are several techniques for reducing witness size that could be implemented~\cite{ethereum-stateless-analysis}. One technique is to ``cache'' frequently used Merkle-Patricia trie nodes in verifier nodes. Nodes in the first few rows of the Merkle-Patricia trie are referenced often and can be stored locally at the verifier nodes. Then, witnesses no longer need to include full Merkle proofs of state values; they would only need to include Merkle-Patricia trie nodes that are not cached at the verifiers.
 
@@ -730,9 +742,9 @@ Another area that could be explored is implementing Ethereum 2.0 Sharding (Secti
 
 \section{Conclusion}
 
-In this project, I worked on implementing the \System proposal in Parity, a popular Ethereum client. The goal of \System is to improve the scalability of Ethereum by reducing I/O operations required to verify blocks. \System does this by bundling a \emph{witness} along with each block, where the witness contains \emph{Merkle proofs} of all the values accessed in the Ethereum state trie during execution of the block. Miners generate witnesses when creating blocks by keeping track of the values accessed during block execution. Verifiers check witnesses for validity and reconstruct Merkle trees in order to verify blocks.
+In this project, I worked on implementing the \System proposal in Parity, a popular Ethereum client. The goal of \System is to improve the scalability of Ethereum by reducing I/O operations required to verify blocks. \System does this by bundling a \emph{witness} along with each block, where the witness contains \emph{Merkle proofs} of all the values accessed in the Ethereum state trie during the execution of the block. Miners generate witnesses when creating blocks by keeping track of the values accessed during block execution. Verifiers check witnesses for validity and reconstruct Merkle trees in order to verify blocks.
 
-\System does accomplish the goal of reducing I/O operations needed to verify blocks, but the extremely large witness overhead in each block makes using \System impractical. The witness size can be $40-100\times$ the size of the block without witnesses. Reducing witness size and exploring alternate architectures such as Ethereum 2.0 Sharding and the execute-order-verify architecture of Hyperledger Fabric are potential future topics for research.
+\System does accomplish the goal of reducing I/O operations needed to verify blocks, but the extremely large witness overhead in each block makes using \System impractical. The witness size can be $40-100\times$ the size of the block without witnesses. The large witness size hurts the performance of \System and requires a significant amount of disk space. Reducing witness size and exploring alternate architectures such as Ethereum 2.0 Sharding and the execute-order-verify architecture of Hyperledger Fabric are potential future topics for research.
 
 \section{Acknowledgements}
 
